@@ -4,6 +4,6 @@ langchain_openai
 neo4j
 langchain_community
 pydantic
-Flask
+flask[async]
 twilio
 flask-cors

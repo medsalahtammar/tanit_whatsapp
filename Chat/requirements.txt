@@ -3,8 +3,7 @@ neo4j_graphrag
 langchain_openai
 neo4j
 langchain_community
-pydantic==2.10.1
-Flask==2.0.3
-twilio==7.2.0
-flask-cors==3.0.10
-uvicorn==0.15.0
+pydantic
+Flask
+twilio
+flask-cors

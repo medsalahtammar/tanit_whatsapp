@@ -22,9 +22,9 @@ async def tanit():
     print("##################################")
     print(user_msg)
     response = MessagingResponse()
-    tanit_resposne =  await process_message(user_msg)
+    tanit_response =  await process_message(user_msg)
 
-    msg=response.message(tanit_resposne)
+    response.message(tanit_response)
     return str(response)
 
 if __name__ == "__main__":

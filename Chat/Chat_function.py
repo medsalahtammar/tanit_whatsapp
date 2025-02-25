@@ -46,6 +46,7 @@ async def chat_with_gpt4(prompt, chat_history=None):
     "Non-Relevant Queries:"
     "If the question is unrelated to reproductive medicine, output: Sorry, I'm not designed for this type of question."
     "For casual conversation, respond appropriately without this disclaimer. but keep the output format as it is"
+    "return in at max 1500 characters"
     
     )
     }

@@ -25,6 +25,7 @@ async def tanit():
     tanit_response =  await process_message(user_msg)
 
     response.message(tanit_response)
+    print(str(response))
     return str(response)
 
 if __name__ == "__main__":

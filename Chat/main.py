@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, current_app
 from twilio.twiml.messaging_response import MessagingResponse
 from flask_cors import CORS as cors
 import logging
-from .security import signature_required
+from security import signature_required
 from whatsapp_utils import process_message, send_message
 import json
 from whatsapp_utils import (

@@ -7,3 +7,5 @@ pydantic
 flask[async]
 twilio
 flask-cors
+aiohttp
+requests

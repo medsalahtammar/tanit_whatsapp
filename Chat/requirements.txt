@@ -7,5 +7,6 @@ pydantic
 flask[async]
 twilio
 flask-cors
+python-dotenv
 aiohttp
 requests

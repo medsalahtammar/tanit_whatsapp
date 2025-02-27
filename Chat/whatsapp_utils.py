@@ -32,12 +32,13 @@ def get_text_message_input(recipient, text):
         }
     )
 
-
+"""
 async def generate_response(user_message):
     response = await process_message(user_message)
     return response
-
-
+"""
+def generate_response(response):
+    return response.upper()
 def send_message(data):
     headers = {
         "Content-type": "application/json",
@@ -93,7 +94,7 @@ async def process_whatsapp_message(body):
     response =await  generate_response(message_body)
 
     data = get_text_message_input(current_app.config["RECIPIENT_WAID"], response)
-    return data
+    send_message(data)
 
 
 def is_valid_whatsapp_message(body):

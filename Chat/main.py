@@ -53,8 +53,7 @@ async def handle_message():
 
     try:
         if is_valid_whatsapp_message(body):
-            response = await process_whatsapp_message(body)
-            send_message(response)
+            process_whatsapp_message(body)
             return jsonify({"status": "ok"}), 200
         else:
             # if the request is not a WhatsApp API event, return an error

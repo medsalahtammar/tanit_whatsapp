@@ -5,6 +5,7 @@ import logging
 from security import signature_required
 from whatsapp_utils import process_message, send_message
 import json
+from config import load_configurations, configure_logging
 from whatsapp_utils import (
     process_whatsapp_message,
     is_valid_whatsapp_message,
@@ -12,7 +13,8 @@ from whatsapp_utils import (
 app = Flask(__name__)
 
 cors(app)
-
+load_configurations(app)
+configure_logging()
 
 @app.route("/", methods=['POST'])
 async def tanit():

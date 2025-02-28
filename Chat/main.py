@@ -25,7 +25,7 @@ async def tanit():
     response.message(tanit_response)
     return str(response)
 
-async def handle_message():
+def handle_message():
     """
     Handle incoming webhook events from the WhatsApp API.
 

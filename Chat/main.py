@@ -97,9 +97,9 @@ def webhook_get():
 
 @app.route("/webhook", methods=["POST"])
 @signature_required
-async def webhook_post():
-    data = await handle_message()
-    return data
+def webhook_post():
+  
+    return  handle_message()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

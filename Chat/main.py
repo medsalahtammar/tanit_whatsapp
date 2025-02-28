@@ -53,7 +53,8 @@ async def handle_message():
 
     try:
         if is_valid_whatsapp_message(body):
-            process_whatsapp_message(body)
+            data = await process_whatsapp_message(body)
+            send_message(data)
             return jsonify({"status": "ok"}), 200
         else:
             # if the request is not a WhatsApp API event, return an error
@@ -95,8 +96,9 @@ def webhook_get():
 
 @app.route("/webhook", methods=["POST"])
 @signature_required
-def webhook_post():
-    return handle_message()
+async def webhook_post():
+    data = await handle_message()
+    return data
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

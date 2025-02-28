@@ -3,6 +3,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 from flask_cors import CORS as cors
 import logging
 from security import signature_required
+import asyncio
 from whatsapp_utils import process_message, send_message
 import json
 from config import load_configurations, configure_logging
@@ -53,8 +54,8 @@ async def handle_message():
 
     try:
         if is_valid_whatsapp_message(body):
-            data = await process_whatsapp_message(body)
-            send_message(data)
+            asyncio.run(process_whatsapp_message(body))
+           
             return jsonify({"status": "ok"}), 200
         else:
             # if the request is not a WhatsApp API event, return an error

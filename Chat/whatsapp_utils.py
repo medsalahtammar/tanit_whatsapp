@@ -95,7 +95,7 @@ async def process_whatsapp_message(body):
     response =await  generate_response(message_body)
 
     data = get_text_message_input(current_app.config["RECIPIENT_WAID"], response)
-    return data
+    send_message(data)
 
 
 def is_valid_whatsapp_message(body):

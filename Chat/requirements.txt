@@ -8,4 +8,5 @@ flask[async]
 twilio
 flask-cors
 aiohttp
+asyncio
 requests

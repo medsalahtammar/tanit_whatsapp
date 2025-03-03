@@ -17,6 +17,16 @@ cors(app)
 load_configurations(app)
 configure_logging()
 
+@app.route("/botpress", methods=['POST'])
+async def handle_prompt():
+    data = request.get_json()
+    if 'prompt' not in data:
+        return jsonify({"error": "Missing 'prompt' in request"}), 400
+
+    prompt = data['prompt']
+    response = await process_message(prompt)
+    return jsonify({"response": response})
+
 @app.route("/", methods=['POST'])
 async def tanit():
     user_msg = request.values.get('Body', '').lower()

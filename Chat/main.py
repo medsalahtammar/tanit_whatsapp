@@ -11,6 +11,7 @@ from whatsapp_utils import (
     process_whatsapp_message,
     is_valid_whatsapp_message,
 )
+from Utils import retrieve_info
 app = Flask(__name__)
 
 cors(app)
@@ -25,6 +26,16 @@ async def handle_prompt():
 
     prompt = data['prompt']
     response = await process_message(prompt)
+    return jsonify({"response": response})
+
+@app.route("/similaritysearch", methods=['POST'])
+def search():
+    data = request.get_json()
+    if 'question' not in data:
+        return jsonify({"error": "Missing 'question' in request"}), 400
+
+    question = data['question']
+    response = retrieve_info(question)
     return jsonify({"response": response})
 
 @app.route("/", methods=['POST'])

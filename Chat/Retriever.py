@@ -2,8 +2,86 @@ from neo4j_graphrag.retrievers import VectorCypherRetriever
 import neo4j
 import os
 from neo4j_graphrag.embeddings.openai import OpenAIEmbeddings
+from neo4j_graphrag.types import RetrieverResultItem
 
+def result_formatter(record: neo4j.Record) -> RetrieverResultItem:
+    section_part_details = record.get("section_part_details")
+    entity_details = record.get("entity_details")
 
+    content = ""
+    metadata = {}
+
+    if section_part_details:
+        section_part = section_part_details.get("section_part", {})
+        content += "### Section Details\n"
+        content += f"- **Title**: {section_part.get('title')}\n"
+        content += f"- **Text**: {section_part.get('text')}\n"
+        content += f"- **DOI**: {section_part.get('doi')}\n"
+        content += f"- **Sequence**: {section_part.get('sequence')}\n"
+
+        prev_section_part = section_part_details.get("previous_section_part")
+        if prev_section_part:
+            content += "### Previous Section\n"
+            content += f"- **Text**: {prev_section_part.get('text')}\n"
+            content += f"- **DOI**: {prev_section_part.get('doi')}\n"
+            content += f"- **Sequence**: {prev_section_part.get('sequence')}\n"
+
+        next_section_part = section_part_details.get("next_section_part")
+        if next_section_part:
+            content += "### Next Section\n"
+            content += f"- **Text**: {next_section_part.get('text')}\n"
+            content += f"- **DOI**: {next_section_part.get('doi')}\n"
+            content += f"- **Sequence**: {next_section_part.get('sequence')}\n"
+
+        if section_part.get("entities"):
+            content += "### Entities in Section\n"
+            for entity in section_part.get("entities", []):
+                content += f"- **Entity Name**: {entity.get('name')}\n"
+                content += f"  - **CUI**: {entity.get('cui')}\n"
+                content += f"  - **Semantic Type**: {entity.get('semantic_type')}\n"
+                if entity.get("definitions"):
+                    content += "  - **Definitions**:\n"
+                    for definition in entity.get("definitions", []):
+                        content += f"    - {definition}\n"
+
+        metadata.update({
+            "section_part_id": section_part.get("starting_id"),
+            "title": section_part.get("title"),
+            "doi": section_part.get("doi"),
+        })
+
+    if entity_details:
+        entity = entity_details.get("entity", {})
+        content += "### Entity Details\n"
+        content += f"- **Name**: {entity.get('name')}\n"
+        content += f"- **CUI**: {entity.get('cui')}\n"
+        content += f"- **Semantic Type**: {entity.get('semantic_type')}\n"
+
+        if entity.get("definitions"):
+            content += "- **Definitions**:\n"
+            for definition in entity.get("definitions", []):
+                content += f"  - {definition}\n"
+
+        if entity.get("related_entities"):
+            content += "- **Related Entities**:\n"
+            for rel in entity.get("related_entities", []):
+                content += f"  - **Name**: {rel.get('name')}\n"
+                content += f"    - **CUI**: {rel.get('cui')}\n"
+                content += f"    - **Relationship**: {rel.get('relationship')}\n"
+
+        metadata.update({
+            "entity_id": entity.get("starting_id"),
+            "name": entity.get("name"),
+            "cui": entity.get("cui"),
+        })
+
+    if not content:
+        content = "No results found."
+
+    return RetrieverResultItem(
+        content=content,
+        metadata=metadata
+    )
 
 def hybridCypherRetriever(query_text):
     
@@ -98,17 +176,26 @@ END AS entity_details
         driver=driver,
         index_name="embedding_vector",
         retrieval_query=retrieval_query,
-        embedder=embedder
+        embedder=embedder,
+        result_formatter=result_formatter
     )
 
-    results = retriever.search(query_text=query_text, top_k=7)
-    response=""
-    for result in results:
-        key, value = result
-        if key == "items":
-            for item in value:
-                response = response + item.content
-    return response
+    result = retriever.search(query_text=query_text, top_k=3)
+    try:
+        contents = [item.content for item in result.items]
+        
+        formatted_results = ""
+
+        for i, content in enumerate(contents, start=1):
+            formatted_results += f"--- Similar Node {i} ---\n"
+            formatted_results += content + "\n\n"
+        print(formatted_results)
+    except AttributeError:
+        print("The 'result' object does not have an 'items' attribute.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    return formatted_results
+
 
 
 

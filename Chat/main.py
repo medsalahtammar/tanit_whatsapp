@@ -23,9 +23,11 @@ async def handle_prompt():
     data = request.get_json()
     if 'prompt' not in data:
         return jsonify({"error": "Missing 'prompt' in request"}), 400
-
+    if 'chat_history' not in data:
+        return jsonify({"error": "Missing 'chat_history' in request"}), 400
     prompt = data['prompt']
-    response = await process_message(prompt)
+    chat_history = data['chat_history']
+    response = await process_message(prompt, chat_history)
     return jsonify({"response": response})
 
 @app.route("/similaritysearch", methods=['POST'])

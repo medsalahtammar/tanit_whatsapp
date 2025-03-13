@@ -5,12 +5,12 @@ import requests
 from Chat_function import chat_with_gpt4
 import re
 
-async def process_message(message: str):
+async def process_message(message: str, chat_history=None):
     """
     Process a message using the GPT-4 chat function and return a generator of the response tokens.
     """
     full_response = ""
-    async for token in chat_with_gpt4(message):
+    async for token in chat_with_gpt4(message, chat_history):
         full_response += token
     print(full_response)
     return full_response

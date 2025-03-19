@@ -2,10 +2,18 @@ import json
 from openai import AsyncOpenAI
 import os
 from Utils import retrieve_info
+from langfuse import Langfuse
+from dotenv import load_dotenv
+from langfuse.decorators import observe, langfuse_context
+load_dotenv()
+langfuse = Langfuse(
+  secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+  public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+  host=os.getenv("LANGFUSE_HOST")
+)
 
-
-
-async def chat_with_gpt4(prompt, chat_history=None):
+@observe(as_type="generation")
+async def chat_with_gpt4(prompt, phone_number, chat_history=None):
     """
     Interact with OpenAI's GPT-4O model, maintaining chat history and ensuring JSON-formatted output.
 
@@ -123,16 +131,43 @@ async def chat_with_gpt4(prompt, chat_history=None):
             second_response = await client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=messages,
-                stream=True
+                stream=True,
+                stream_options={"include_usage": True}
             )
 
-    
+            
             full_response = ""
             async for chunk in second_response:
+                if chunk.usage != None:
+                    completion_tokens=chunk.usage.completion_tokens
+                    prompt_tokens=chunk.usage.prompt_tokens
+                    cached_tokens=chunk.usage.prompt_tokens_details.cached_tokens
+                    langfuse_context.update_current_observation(
+                        user_id=phone_number,
+                        usage_details={
+                            "input": prompt_tokens,
+                            "output": completion_tokens,
+                            "cache_read_input_tokens": cached_tokens,
+                            "total": prompt_tokens + completion_tokens + cached_tokens
+                            },
+                        cost_details={
+                            "input": 0.00000015 * prompt_tokens,
+                            "cache_read_input_tokens": 0.000000075 * cached_tokens,
+                            "output": 0.000000600 * completion_tokens,
+                            "total": 0.00000015 * prompt_tokens + 0.000000075 * cached_tokens + 0.000000600 * completion_tokens
+                        }
+                    )    
+                    print(f"prompt tokens: {prompt_tokens}")
+                    print(f"completion tokens: {completion_tokens}")
+                    print(f"cached tokens: {cached_tokens}")
+                    break
                 if token := chunk.choices[0].delta.content or "":
                     content_chunk = token
                     full_response += content_chunk
                     yield content_chunk
+            langfuse_context.update_current_trace(
+                user_id=phone_number
+            )
             print(full_response)
             
     except Exception as e:

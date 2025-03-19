@@ -10,3 +10,5 @@ flask-cors
 aiohttp
 asyncio
 requests
+literalai
+langfuse

@@ -4,7 +4,7 @@ from flask_cors import CORS as cors
 import logging
 from security import signature_required
 import asyncio
-from whatsapp_utils import process_message, send_message
+from whatsapp_utils import process_message, process_message_literal, find_user
 import json
 from config import load_configurations, configure_logging
 from whatsapp_utils import (
@@ -18,6 +18,27 @@ cors(app)
 load_configurations(app)
 configure_logging()
 
+@app.route("/literal", methods=['POST'])
+def handle_prompt_literal():
+    data = request.get_json()
+    if 'prompt' not in data:
+        return jsonify({"error": "Missing 'prompt' in request"}), 400
+    if 'phone_number' not in data:
+        return jsonify({"error": "Missing 'phone_number' in request"}), 400
+    prompt = data['prompt']
+    phone_number = data['phone_number']
+    response = process_message_literal(prompt,phone_number)
+    return jsonify({"response": response})
+
+@app.route("/user", methods=['POST'])
+def find_user_literal():
+    data = request.get_json()
+    if 'phone_number' not in data:
+        return jsonify({"error": "Missing 'phone_number' in request"}), 400
+    phone_number = data['phone_number']
+    exists = find_user(phone_number)
+    return jsonify({"response": exists})
+
 @app.route("/botpress", methods=['POST'])
 async def handle_prompt():
     data = request.get_json()
@@ -25,9 +46,12 @@ async def handle_prompt():
         return jsonify({"error": "Missing 'prompt' in request"}), 400
     if 'chat_history' not in data:
         return jsonify({"error": "Missing 'chat_history' in request"}), 400
+    if 'phone_number' not in data:
+        return jsonify({"error": "Missing 'phone_number' in request"}), 400
     prompt = data['prompt']
     chat_history = data['chat_history']
-    response = await process_message(prompt, chat_history)
+    phone_number = data['phone_number']
+    response = await process_message(prompt,phone_number, chat_history)
     return jsonify({"response": response})
 
 @app.route("/similaritysearch", methods=['POST'])

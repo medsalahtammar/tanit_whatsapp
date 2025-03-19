@@ -51,7 +51,7 @@ def find_user(phone_number):
     if user != None:
         return True
     else:
-        literalai_client.api.create_user(identifier=phone_number)
+        user = literalai_client.api.create_user(identifier=phone_number)
         return False
 
 def log_http_response(response):

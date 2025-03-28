@@ -4,7 +4,7 @@ from flask_cors import CORS as cors
 import logging
 from security import signature_required
 import asyncio
-from whatsapp_utils import process_message, process_message_literal, find_user
+from whatsapp_utils import process_message, process_message_literal, find_user, find_inactive_numeric_users, notify_user
 import json
 from config import load_configurations, configure_logging
 from whatsapp_utils import (
@@ -38,6 +38,24 @@ def find_user_literal():
     phone_number = data['phone_number']
     exists = find_user(phone_number)
     return jsonify({"response": exists})
+
+@app.route("/inactive_users", methods=['GET'])
+def get_inactive_users():
+    inactive_users = find_inactive_numeric_users()
+    return jsonify({"inactive_users": inactive_users})
+
+@app.route("/notify_user", methods=['POST'])
+def notify_user_endpoint():
+    data = request.get_json()
+    if not data or 'identifier' not in data:
+        return jsonify({"error": "Missing 'identifier' in request"}), 400
+
+    identifier = data['identifier']
+    user = notify_user(identifier)
+    if user:
+        return jsonify({"message": f"User {identifier} has been notified."})
+    else:
+        return jsonify({"error": f"User {identifier} not found."}), 404
 
 @app.route("/botpress", methods=['POST'])
 async def handle_prompt():

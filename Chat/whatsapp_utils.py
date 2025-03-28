@@ -7,6 +7,10 @@ from Chat_function_literal import chat_with_gpt4_no_streaming as chat_with_gpt4_
 from literalai import LiteralClient
 import re
 import os
+from datetime import datetime, timezone, timedelta
+from dotenv import load_dotenv  
+from dateutil import parser
+load_dotenv()
 
 async def process_message(message: str, phone_number, chat_history=None):
     """
@@ -28,7 +32,9 @@ def process_message_literal(message: str, phone_number):
         chat_history = find_chat_history(thread.id, literalai_client) 
         with literalai_client.step(thread_id=thread.id, name=message) as step:
             full_response =  chat_with_gpt4_literal(message, chat_history)
-    
+        user = literalai_client.api.get_user(identifier=phone_number)
+        if user.metadata.get("Status") != "Active":
+            literalai_client.api.update_user(id=user.id, identifier=user.identifier, metadata={"Status": "Active", "Type": "Whatsapp"})
     return full_response
 
 def find_chat_history(thread_id, literalai_client):
@@ -51,8 +57,40 @@ def find_user(phone_number):
     if user != None:
         return True
     else:
-        user = literalai_client.api.create_user(identifier=phone_number)
+        user = literalai_client.api.create_user(identifier=phone_number, metadata={"Type": "Whatsapp"})
         return False
+
+def find_inactive_numeric_users():
+    literalai_client = LiteralClient(api_key=os.getenv("LITERAL_API_KEY"))
+    users = literalai_client.api.get_users()
+    threshold_time = datetime.now(timezone.utc) - timedelta(days=0.9)
+    inactive_users = []
+    for user in users.data:
+        if user.metadata.get("Type") == "Whatsapp":
+            print(user.identifier)
+            thread = literalai_client.api.get_thread(id=f"Thread_{user.identifier}")
+            if thread:
+                step = thread.steps[len(thread.steps)-1]
+                print(step.end_time)
+                last_step_time = parser.isoparse(step.end_time)
+                if last_step_time.tzinfo is None:
+                    last_step_time = last_step_time.replace(tzinfo=timezone.utc)
+                if last_step_time < threshold_time:
+                    if(user.metadata.get("Status") == "Notified"):
+                        break
+                    else:
+                        literalai_client.api.update_user(id=user.id,identifier=user.identifier, metadata={"Status": "Inactive", "Type": "Whatsapp"})
+                        inactive_users.append(user.identifier)
+                        print(f"User {user.identifier} has been inactive for more than 2 days.")
+    return inactive_users
+
+def notify_user(identifier):
+    literalai_client = LiteralClient(api_key=os.getenv("LITERAL_API_KEY"))
+    user = literalai_client.api.get_user(identifier=identifier)
+    if user != None:
+        user= literalai_client.api.update_user(id=user.id,identifier=user.identifier, metadata={"Status": "Notified","Type": "Whatsapp"})
+    return user
+        
 
 def log_http_response(response):
     logging.info(f"Status: {response.status_code}")

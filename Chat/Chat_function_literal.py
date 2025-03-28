@@ -4,8 +4,6 @@ import os
 from Utils import retrieve_info
 from literalai import AsyncLiteralClient
 import weave
-from dotenv import load_dotenv  
-load_dotenv()
 literalai_client = AsyncLiteralClient(api_key=os.getenv("LITERAL_API_KEY"))
 
 

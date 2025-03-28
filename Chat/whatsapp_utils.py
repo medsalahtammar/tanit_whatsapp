@@ -8,9 +8,7 @@ from literalai import LiteralClient
 import re
 import os
 from datetime import datetime, timezone, timedelta
-from dotenv import load_dotenv  
 from dateutil import parser
-load_dotenv()
 
 async def process_message(message: str, phone_number, chat_history=None):
     """

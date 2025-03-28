@@ -12,3 +12,5 @@ asyncio
 requests
 literalai
 langfuse
+python-dateutil
+weave

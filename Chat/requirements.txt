@@ -8,9 +8,7 @@ flask[async]
 twilio
 flask-cors
 aiohttp
-asyncio
 requests
 literalai
-langfuse
 python-dateutil
 weave

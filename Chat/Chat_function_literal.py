@@ -4,10 +4,11 @@ import os
 from Utils import retrieve_info
 from literalai import AsyncLiteralClient
 from dotenv import load_dotenv
+import weave
 load_dotenv()
 literalai_client = AsyncLiteralClient(api_key=os.getenv("LITERAL_API_KEY"))
 
-
+@weave.op()
 def chat_with_gpt4_no_streaming(prompt, chat_history=None):
     """
     Interact with OpenAI's GPT-4O model, maintaining chat history and ensuring JSON-formatted output.
@@ -20,6 +21,7 @@ def chat_with_gpt4_no_streaming(prompt, chat_history=None):
     Returns:
     - dict: The assistant's response in JSON format.
     """
+    weave.init("zaouelimaziz-tanit-healthcare-technologies/TanitWhatsappTraces")
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     literalai_client.instrument_openai() 
     if chat_history is None:

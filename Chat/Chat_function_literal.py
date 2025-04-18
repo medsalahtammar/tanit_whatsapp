@@ -21,7 +21,7 @@ def chat_with_gpt4_no_streaming(prompt, chat_history=None):
     Returns:
     - dict: The assistant's response in JSON format.
     """
-    weave.init("zaouelimaziz-tanit-healthcare-technologies/TanitWhatsappTraces")
+    weave.init("tanit-healthcare-technologies/TanitWhatsappTraces")
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     literalai_client.instrument_openai() 
     if chat_history is None:

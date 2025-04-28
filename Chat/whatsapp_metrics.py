@@ -5,6 +5,10 @@ from literalai import LiteralClient
 from datetime import datetime, timedelta
 import statistics
 import os
+import wandb
+from Chat_function_literal import evaluate_tanit
+from sklearn.metrics import accuracy_score, f1_score
+import json
 load_dotenv()
 
 literalai_client = LiteralClient(api_key=os.getenv("LITERAL_API_KEY"))
@@ -100,3 +104,59 @@ def get_global_metrics():
     }
 
     return global_summary
+
+def accuracy_test():
+    run = wandb.init(project="llm-qcm-evaluation", name="tanit-evaluation")
+
+    table = wandb.Table(columns=["Question", "Options", "Correct Answer", "Model Answer", "Is Correct", "Explanation"])
+    qcm_dataset = [
+        {
+            "question": "What is the purpose of an Institutional Review Board (IRB) in research involving human subjects?",
+            "answer": "To ensure the ethical treatment and protection of human subjects involved in research",
+            "explanation": "Institutional Review Boards (IRBs) are established to review and oversee research protocols to ensure ethical standards are upheld, particularly the protection of human subjects' rights and welfare.",
+            "options": [
+                "To provide funding for research studies",
+                "To ensure the ethical treatment and protection of human subjects involved in research",
+                "To recruit participants for clinical trials",
+                "To publish research findings in academic journals"
+            ]
+        },
+        {
+            "question": "What is the primary purpose of the Society for Assisted Reproductive Technology (SART)?",
+            "answer": "To collect and report data on assisted reproductive technology outcomes.",
+            "explanation": "The SART's role involves collecting data that provides insights into the success rates and practices of assisted reproductive technology clinics, which is essential for ensuring the quality of care and compliance with regulatory standards.",
+            "options": [
+                "To perform IVF procedures",
+                "To collect and report data on assisted reproductive technology outcomes.",
+                "To provide grants for research in reproductive medicine",
+                "To conduct clinical trials on new fertility treatments"
+            ]
+        },
+    ]
+
+    y_true = []
+    y_pred = []
+
+    for item in qcm_dataset:
+        prompt = json.dumps({
+            "question": item['question'],
+            "options": item['options']
+        })
+        model_response = evaluate_tanit(prompt)
+        model_answer = model_response.strip()
+        is_correct = model_answer == item['answer']
+
+        y_true.append(item['answer'])
+        y_pred.append(model_answer)
+
+        table.add_data(item['question'], item['options'], item['answer'], model_answer, is_correct, item['explanation'])
+
+    accuracy = accuracy_score(y_true, y_pred)
+    f1 = f1_score(y_true, y_pred, average='weighted')
+    run.log({
+        "QCM Evaluation": table,
+        "accuracy": accuracy,
+        "f1_score": f1
+    })
+
+    run.finish()

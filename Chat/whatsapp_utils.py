@@ -26,14 +26,17 @@ def find_chat_history(thread_id, literalai_client):
     chat_history = []
     if literalai_client.api.get_thread(id=thread_id):
         if literalai_client.api.get_thread(id=thread_id).steps:
-            for step in [literalai_client.api.get_thread(id=thread_id).steps[-1]]:
-                if step.generation:
-                    for message in step.generation.messages[-9:]:
-                        if message["role"] != "system" and message["role"] != "function":
-                            chat_history.append(message)                      
-                if step.output:
-                    chat_history.append({"role": "assistant", "content": step.output["content"]})
-            return chat_history
+            for step in literalai_client.api.get_thread(id=thread_id).steps:
+                if step.type != "llm":
+                    parent_id = step.id
+                    user_message = step.name
+                    if step.error is None:
+                        chat_history.append({"role": "user", "content": user_message})
+                else : 
+                    if step.parent_id == parent_id and step.output["content"] is not None:
+                        assistant_message = step.output["content"]
+                        chat_history.append({"role": "assistant", "content": assistant_message})
+            return chat_history[-10:]
     else:
         return None
 

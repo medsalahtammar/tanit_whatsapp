@@ -1,0 +1,435 @@
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated function: `id`.} {position: line: 48, column: 21, offset: 1832} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated function: `id`.} {position: line: 79, column: 21, offset: 2684} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated function: `id`.} {position: line: 93, column: 21, offset: 3105} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+--- Similar Node 1 ---
+### Section Details
+- **Title**: Endometrial injection of embryo culture supernatant for subfertile women in assisted reproduction
+- **Text**: The study was approved by the institutional review board.
+- **DOI**: 10.1002/14651858.cd013063.pub2
+- **Sequence**: 197
+- **Cluster Summary**: ### Introduction & Theme Context
+- The studies in this cluster primarily focus on fertility and reproductive health, with specific attention to the effects of various interventions on reproductive outcomes and potential risks associated with fertility treatments.
+- Clinical significance is highlighted in the context of understanding the risks of endometrial cancer in women treated with ovary-stimulating drugs for subfertility, as well as the broader implications of reproductive health in populations affected by chronic disorders and infectious diseases like HIV.
+
+### Treatment Types & Interventions
+- **Pine Bark Extract:** Investigated for its potential benefits in treating chronic disorders, though specific dosages and administration routes are not detailed in the abstracts.
+- **Ovary-Stimulating Drugs:** Used in subfertility treatments, with a focus on understanding the associated risks of endometrial cancer. Specific drugs and regimens are not detailed in the provided text.
+- **Antiretroviral Therapy (ART):** Various regimens, including fixed-dose combinations and HAART, are studied for adherence and effectiveness in HIV-positive populations. Specific drugs mentioned include stavudine, 3TC, and nevirapine (NVP).
+
+### Population & Methodology
+- **Study Populations:** Diverse populations are studied, including women at risk of endometrial cancer, HIV-infected individuals, and participants in reproductive health studies. Sample sizes vary, with some studies having as few as 12 participants and others involving thousands.
+- **Study Designs:** Include prospective cohort studies, retrospective cohort studies, and case-control studies. Methodologies often involve questionnaires, clinical measurements, and biological samples.
+- **Geographic Settings:** Studies are conducted in various countries, including South Africa, Canada, the USA, Taiwan, Brazil, and Norway, reflecting a mix of high-resource and low-to-middle-resource settings.
+
+### Key Outcomes & Findings
+- **Endometrial Cancer Risk:** Women treated with ovary-stimulating drugs for subfertility may have an increased risk of endometrial cancer, though specific statistical measures are not provided.
+- **ART Adherence:** High adherence rates are crucial for effective HIV management, with adherence often measured through pharmacy records and self-reports. Specific adherence thresholds (e.g., 95% adherence) are used to evaluate outcomes.
+- **Reproductive Health Post-COVID-19:** The CoVHORT study explores reproductive health outcomes in relation to COVID-19 vaccination, though specific findings are not detailed in the abstracts.
+
+### Research Gaps & Limitations
+- **Lack of Specificity in Interventions:** Many studies do not provide detailed information on dosages or specific drug regimens, limiting the ability to replicate or build upon findings.
+- **Geographic and Demographic Limitations:** Some studies are limited by their geographic focus or demographic homogeneity, which may affect the generalizability of findings.
+- **Potential Biases:** Issues such as self-reported data, questionnaire fatigue, and socially desirable responses are noted, which could impact the reliability of results.
+
+### Implications & Recommendations
+- **Clinical Practice:** Understanding the risks associated with ovary-stimulating drugs can inform clinical decisions and patient counseling in fertility treatments.
+- **Public Health:** High adherence to ART is essential for managing HIV, highlighting the need for interventions that support adherence in diverse populations.
+- **Future Research:** There is a need for more detailed studies on the specific effects of pine bark extract and other interventions on reproductive health, as well as broader studies that include diverse populations and settings to enhance generalizability.
+### Previous Section
+- **Text**: The study was registered -methodological rationale -distribution of tasks
+- **DOI**: 10.1002/14651858.cd013063.pub2
+- **Sequence**: 196
+### Next Section
+- **Text**: The trial was registered with the clinical trial registry of India (CTRI/2013/01/003280)
+- **DOI**: 10.1002/14651858.cd013063.pub2
+- **Sequence**: 198
+### Entities in Section
+- **Entity Name**: Ethics Committees, Research
+  - **CUI**: C0086911
+  - **Semantic Type**: Professional or Occupational Group; Human
+  - **Definitions**:
+    - Hospital or other institutional committees established to protect the welfare of research subjects. Federal regulations (the "Common Rule" (45 CFR 46)) mandate the use of these committees to monitor federally-funded biomedical and behavioral research involving human subjects.
+    - A specially constituted independent review body comprised of medical, scientific and non-scientific members established and designated by an entity to ensure the protection of the rights, safety and well-being of human subjects recruited to participate in biomedical or behavioral research according to the requirements outlined in Title 38, part 16 (same as Title 45, part 46 and Title 21, part 56) of the U.S. Code of Federal Regulations. IRB responsibility include but not limited to the reviewing, approving, and providing continuing review of trial protocol and amendments and of the methods and material(s) to be used in obtaining and documenting informed consent of the trial. Other equivalent committees with the same or similar functions are also considered to be IRBs.
+
+
+--- Similar Node 2 ---
+### Section Details
+- **Title**: Contraceptive-specific antimüllerian hormone values in reproductive-age women: a population study of 42,684 women
+- **Text**: All participants provided informed consent to participate in the research with all data deidentified before analysis.This study was approved by the Western Institutional Review Board (protocol number 20180443), an ethics committee that ensures that proper research consent and methodology are followed.
+- **DOI**: 10.1016/j.fertnstert.2023.02.019
+- **Sequence**: 8
+- **Cluster Summary**: ### Introduction & Theme Context
+- The studies in this cluster primarily focus on fertility and reproductive health, with specific attention to the effects of various interventions on reproductive outcomes and potential risks associated with fertility treatments.
+- Clinical significance is highlighted in the context of understanding the risks of endometrial cancer in women treated with ovary-stimulating drugs for subfertility, as well as the broader implications of reproductive health in populations affected by chronic disorders and infectious diseases like HIV.
+
+### Treatment Types & Interventions
+- **Pine Bark Extract:** Investigated for its potential benefits in treating chronic disorders, though specific dosages and administration routes are not detailed in the abstracts.
+- **Ovary-Stimulating Drugs:** Used in subfertility treatments, with a focus on understanding the associated risks of endometrial cancer. Specific drugs and regimens are not detailed in the provided text.
+- **Antiretroviral Therapy (ART):** Various regimens, including fixed-dose combinations and HAART, are studied for adherence and effectiveness in HIV-positive populations. Specific drugs mentioned include stavudine, 3TC, and nevirapine (NVP).
+
+### Population & Methodology
+- **Study Populations:** Diverse populations are studied, including women at risk of endometrial cancer, HIV-infected individuals, and participants in reproductive health studies. Sample sizes vary, with some studies having as few as 12 participants and others involving thousands.
+- **Study Designs:** Include prospective cohort studies, retrospective cohort studies, and case-control studies. Methodologies often involve questionnaires, clinical measurements, and biological samples.
+- **Geographic Settings:** Studies are conducted in various countries, including South Africa, Canada, the USA, Taiwan, Brazil, and Norway, reflecting a mix of high-resource and low-to-middle-resource settings.
+
+### Key Outcomes & Findings
+- **Endometrial Cancer Risk:** Women treated with ovary-stimulating drugs for subfertility may have an increased risk of endometrial cancer, though specific statistical measures are not provided.
+- **ART Adherence:** High adherence rates are crucial for effective HIV management, with adherence often measured through pharmacy records and self-reports. Specific adherence thresholds (e.g., 95% adherence) are used to evaluate outcomes.
+- **Reproductive Health Post-COVID-19:** The CoVHORT study explores reproductive health outcomes in relation to COVID-19 vaccination, though specific findings are not detailed in the abstracts.
+
+### Research Gaps & Limitations
+- **Lack of Specificity in Interventions:** Many studies do not provide detailed information on dosages or specific drug regimens, limiting the ability to replicate or build upon findings.
+- **Geographic and Demographic Limitations:** Some studies are limited by their geographic focus or demographic homogeneity, which may affect the generalizability of findings.
+- **Potential Biases:** Issues such as self-reported data, questionnaire fatigue, and socially desirable responses are noted, which could impact the reliability of results.
+
+### Implications & Recommendations
+- **Clinical Practice:** Understanding the risks associated with ovary-stimulating drugs can inform clinical decisions and patient counseling in fertility treatments.
+- **Public Health:** High adherence to ART is essential for managing HIV, highlighting the need for interventions that support adherence in diverse populations.
+- **Future Research:** There is a need for more detailed studies on the specific effects of pine bark extract and other interventions on reproductive health, as well as broader studies that include diverse populations and settings to enhance generalizability.
+### Previous Section
+- **Text**: Contraceptive type was self-reported and included combined oral contraceptive pill (COCP), progestin-only pill (POP), hormonal IUD, copper IUD, implant, vaginal ring, depot medroxyprogesterone injection, or patch.Baseline demographic data was self-reported via online questionnaire and included height, weight, smoking status, race/ethnicity, previous births, age of maternal menopause, and age at menarche.Body mass index (BMI) was calculated as weight in kilograms divided by height in meters squared.Participants self-identified as American Indian or Alaskan, white, black or African American, Hispanic or Latino, Asian, Native Hawaiian or Pacific Islander, or ''other.''Individuals who selfidentified as more than 1 race/ethnicity were considered of multirace/multiethnicity.
+- **DOI**: 10.1016/j.fertnstert.2023.02.019
+- **Sequence**: 7
+### Next Section
+- **Text**: Participants who used a copper IUD or no contraceptive were instructed to collect their sample on the third day of their menstrual cycle (range, days 2-4).Participants who used a hormonal IUD or POP who reported regular menstrual cycles were also instructed to collect on day 3.All other participants were instructed to collect on any day of their menstrual cycle.
+- **DOI**: 10.1016/j.fertnstert.2023.02.019
+- **Sequence**: 9
+### Entities in Section
+- **Entity Name**: methodology
+  - **CUI**: C0969625
+  - **Semantic Type**: Intellectual Product
+- **Entity Name**: analysis
+  - **CUI**: C1524024
+  - **Semantic Type**: Functional Concept
+  - **Definitions**:
+    - Used for the identification or quantitative determination of a substance or its constituents and metabolites; includes the analysis of air, water, or other environmental carrier. It excludes the chemical analysis of tissues, tumors, body fluids, organisms, and plants for which "chemistry" is used. The concept applies to both methodology and results. For analysis of substances in blood, cerebrospinal fluid, and urine the specific subheading designating the fluid is used.
+- **Entity Name**: research
+  - **CUI**: C0035168
+  - **Semantic Type**: Research Activity
+  - **Definitions**:
+    - Critical and exhaustive investigation or experimentation, having for its aim the discovery of new facts and their correct interpretation, the revision of accepted conclusions, theories, or laws in the light of newly discovered facts, or the practical application of such new or revised conclusions, theories, or laws. (Webster, 3d ed)
+    - http://www.nlm.nih.gov/mesh/MBrowser.html
+
+
+--- Similar Node 3 ---
+### Section Details
+- **Title**: Repeat doses of prenatal corticosteroids for women at risk of preterm birth for improving neonatal health outcomes
+- **Text**: Ethics approval: approved by the institutional review board at each institution.
+- **DOI**: 10.1002/14651858.cd003935.pub5
+- **Sequence**: 654
+- **Cluster Summary**: ### Introduction & Theme Context
+- The studies in this cluster primarily focus on fertility and reproductive health, with specific attention to the effects of various interventions on reproductive outcomes and potential risks associated with fertility treatments.
+- Clinical significance is highlighted in the context of understanding the risks of endometrial cancer in women treated with ovary-stimulating drugs for subfertility, as well as the broader implications of reproductive health in populations affected by chronic disorders and infectious diseases like HIV.
+
+### Treatment Types & Interventions
+- **Pine Bark Extract:** Investigated for its potential benefits in treating chronic disorders, though specific dosages and administration routes are not detailed in the abstracts.
+- **Ovary-Stimulating Drugs:** Used in subfertility treatments, with a focus on understanding the associated risks of endometrial cancer. Specific drugs and regimens are not detailed in the provided text.
+- **Antiretroviral Therapy (ART):** Various regimens, including fixed-dose combinations and HAART, are studied for adherence and effectiveness in HIV-positive populations. Specific drugs mentioned include stavudine, 3TC, and nevirapine (NVP).
+
+### Population & Methodology
+- **Study Populations:** Diverse populations are studied, including women at risk of endometrial cancer, HIV-infected individuals, and participants in reproductive health studies. Sample sizes vary, with some studies having as few as 12 participants and others involving thousands.
+- **Study Designs:** Include prospective cohort studies, retrospective cohort studies, and case-control studies. Methodologies often involve questionnaires, clinical measurements, and biological samples.
+- **Geographic Settings:** Studies are conducted in various countries, including South Africa, Canada, the USA, Taiwan, Brazil, and Norway, reflecting a mix of high-resource and low-to-middle-resource settings.
+
+### Key Outcomes & Findings
+- **Endometrial Cancer Risk:** Women treated with ovary-stimulating drugs for subfertility may have an increased risk of endometrial cancer, though specific statistical measures are not provided.
+- **ART Adherence:** High adherence rates are crucial for effective HIV management, with adherence often measured through pharmacy records and self-reports. Specific adherence thresholds (e.g., 95% adherence) are used to evaluate outcomes.
+- **Reproductive Health Post-COVID-19:** The CoVHORT study explores reproductive health outcomes in relation to COVID-19 vaccination, though specific findings are not detailed in the abstracts.
+
+### Research Gaps & Limitations
+- **Lack of Specificity in Interventions:** Many studies do not provide detailed information on dosages or specific drug regimens, limiting the ability to replicate or build upon findings.
+- **Geographic and Demographic Limitations:** Some studies are limited by their geographic focus or demographic homogeneity, which may affect the generalizability of findings.
+- **Potential Biases:** Issues such as self-reported data, questionnaire fatigue, and socially desirable responses are noted, which could impact the reliability of results.
+
+### Implications & Recommendations
+- **Clinical Practice:** Understanding the risks associated with ovary-stimulating drugs can inform clinical decisions and patient counseling in fertility treatments.
+- **Public Health:** High adherence to ART is essential for managing HIV, highlighting the need for interventions that support adherence in diverse populations.
+- **Future Research:** There is a need for more detailed studies on the specific effects of pine bark extract and other interventions on reproductive health, as well as broader studies that include diverse populations and settings to enhance generalizability.
+### Previous Section
+- **Text**: Declarations of interest: no conflict of interest.
+- **DOI**: 10.1002/14651858.cd003935.pub5
+- **Sequence**: 653
+### Next Section
+- **Text**: Trial registration: retrospective.Inclusion criteria: single, twin or triplet pregnancy 25-32 weeks' gestation if women remained undelivered 14-21 days after an initial course of prenatal corticosteroids (either betamethasone or dexamethasone) and continued to be at high risk of preterm birth Gestational age recruited: up to < 32 weeks Exclusion criteria: contraindication to corticosteroid use, needed chronic doses of these drugs, evidence of chorioamnionitis, carried a fetus with a known lethal congenital abnormality, had an initial course of corticosteroids before 23 weeks' gestation, previously participated in MACS, women with a multiple pregnancy with fetal death after 13 weeks' gestation Women who remained at risk of preterm birth after their first course of study medication continued to receive 2 doses of betamethasone 12 mg or placebo, 24 hours apart, every 14 days until 33 weeks' gestation or birth, whichever happened first.For women with preterm rupture of the membranes the recommendation was to stop the study medication at 32 weeks' gestation Outcomes Primary outcomes: composite of perinatal or neonatal mortality and neonatal morbidity; 1 of the following: stillbirth or neonatal death (defined as death during the first 28 days of life or before hospital discharge); severe RDS (defined as needing assisted ventilation via endotracheal tube and supplemental oxygen within the first 24 hours of life and for ≥ 24 hours, and either a radiographic scan compatible with RDS or surfactant given between the first 2 and 24 hours of life); BPD (defined as needing oxygen Sample-size calculation: yes.Sample size based on a 25% increase in the primary outcome rate, from an estimated 50% in the control group to 62.5% in the repeat group.The planned sample size was 220 women in each arm (2-tailed alpha 0.05, beta 0.2).
+- **DOI**: 10.1002/14651858.cd003935.pub5
+- **Sequence**: 655
+### Entities in Section
+- **Entity Name**: Ethics
+  - **CUI**: C0015000
+  - **Semantic Type**: Idea or Concept
+  - **Definitions**:
+    - The philosophy or code pertaining to what is ideal in human character and conduct. Also, the field of study dealing with the principles of morality.
+- **Entity Name**: ethics
+  - **CUI**: C1527243
+  - **Semantic Type**: Functional Concept
+  - **Definitions**:
+    - Used with techniques and activities for discussion and analysis with respect to human and social values.
+- **Entity Name**: Ethics Committees, Research
+  - **CUI**: C0086911
+  - **Semantic Type**: Professional or Occupational Group; Human
+  - **Definitions**:
+    - Hospital or other institutional committees established to protect the welfare of research subjects. Federal regulations (the "Common Rule" (45 CFR 46)) mandate the use of these committees to monitor federally-funded biomedical and behavioral research involving human subjects.
+    - A specially constituted independent review body comprised of medical, scientific and non-scientific members established and designated by an entity to ensure the protection of the rights, safety and well-being of human subjects recruited to participate in biomedical or behavioral research according to the requirements outlined in Title 38, part 16 (same as Title 45, part 46 and Title 21, part 56) of the U.S. Code of Federal Regulations. IRB responsibility include but not limited to the reviewing, approving, and providing continuing review of trial protocol and amendments and of the methods and material(s) to be used in obtaining and documenting informed consent of the trial. Other equivalent committees with the same or similar functions are also considered to be IRBs.
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated function: `id`.} {position: line: 48, column: 21, offset: 1832} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated function: `id`.} {position: line: 79, column: 21, offset: 2684} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated function: `id`.} {position: line: 93, column: 21, offset: 3105} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+
+
+
+--- Similar Node 1 ---
+### Section Details
+- **Title**: Intracytoplasmic sperm injection vs. conventional in vitro fertilization in patients with non-male factor infertility
+- **Text**: This retrospective analysis was performed using primary IVF clinic data collected by the Society for Assisted Reproductive Technology (SART).All data were collected by SART, validated and audited annually, and reported to the Centers for Disease Control and Prevention in compliance with the Fertility Clinic Success Rate and Certification Act of 1992 (Public Law 102-493).
+- **DOI**: 10.1016/j.fertnstert.2022.06.009
+- **Sequence**: 5
+- **Cluster Summary**: ### 1. Introduction & Theme Context
+- The studies in this cluster primarily focus on assisted reproductive technologies (ART) and their implications on fertility and reproductive health. Key areas include the efficacy and outcomes of ART interventions like IVF and ICSI, the psychosocial and medical impacts of gestational surrogacy, and the long-term health implications for offspring conceived through ART.
+- The clinical significance lies in addressing infertility, a condition affecting 15% of reproductive-aged couples globally, and improving ART success rates, which historically have been low but are improving due to technological advancements.
+
+### 2. Treatment Types & Interventions
+- **Gestational Surrogacy**: Increasingly used in the U.S., with support from state laws, and offered by 90% of CDC-reporting IVF centers.
+- **In Vitro Fertilization (IVF) and Intracytoplasmic Sperm Injection (ICSI)**: Common ART methods involving in vitro handling of gametes. Success rates have improved due to advances in ovarian stimulation and embryo transfer techniques.
+- **Intrauterine Insemination (IUI)**: Recommended for unexplained and moderate male factor subfertility, though its efficacy is debated.
+- **Fertility Preservation in Cancer Patients**: Techniques include ovarian stimulation and non-hormonal methods, with no significant difference in cancer recurrence rates between methods.
+
+### 3. Population & Methodology
+- **Study Populations**: Diverse, including women with subfertility, cancer patients undergoing fertility preservation, and ethnic groups undergoing ART.
+- **Sample Sizes**: Vary widely, with some studies involving thousands of participants (e.g., 31,629 women and 17,630 men in a cardiovascular study).
+- **Study Designs**: Include systematic reviews, meta-analyses, cohort studies, and randomized controlled trials. Methodologies often involve linking large health datasets to assess long-term outcomes.
+
+### 4. Key Outcomes & Findings
+- **Success Rates**: ART success rates have improved, with pregnancy rates doubling from 1994 to 2003. However, live birth rates remain below 30% per cycle.
+- **Health Outcomes**: Women with subfertility have increased risks of cardiovascular diseases (e.g., stroke RR 1.18, coronary heart disease RR 1.16).
+- **Ethnic Disparities**: Black and Asian women have lower ART success rates compared to white women, with black women facing higher risks of treatment failure at various stages (e.g., cycle cancellation RR 2.15).
+- **Economic Barriers**: ART costs are prohibitively high in LMICs, often exceeding GDP per capita, limiting access to wealthier individuals.
+
+### 5. Research Gaps & Limitations
+- **Data on Poor Prognosis Groups**: Limited studies on women with few embryos or advanced reproductive age.
+- **Long-term Offspring Health**: Uncertainty remains about the long-term impact of ART on offspring health.
+- **Ethnic and Socioeconomic Factors**: Need for more research on how these factors influence ART outcomes and access.
+- **ART Costs in LMICs**: Sparse data on ART affordability and financing in low-income settings.
+
+### 6. Implications & Recommendations
+- **Clinical Practice**: Improved ART techniques and personalized treatment plans could enhance success rates. Addressing ethnic disparities and economic barriers is crucial for equitable access.
+- **Policy**: Governments, especially in LMICs, should consider integrating infertility treatments into national health policies to improve access and affordability.
+- **Future Research**: Large, well-designed trials focusing on live birth outcomes and the impact of ART on long-term health are needed. Studies should also explore the role of socioeconomic and ethnic factors in ART success.
+### Previous Section
+- **Text**: Although many studies have shown that ICSI is not beneficial in cases of non-male factor infertility, it has continued to be used at high rates, and its effect on cumulative live birth rates (CLBRs) has not been studied in a large US population.It is possible that while using ICSI, CLBR might be impaired because only fully mature oocytes are inseminated, thus decreasing the pool of oocytes with potential for embryo development, whereas with standard insemination techniques, oocytes at various stages of maturation are inseminated (5) .There has also been a lack of cost analyses assessing the financial implications of this additional procedure.The purpose of our study was to assess CLBR while using ICSI vs. cIVF based on recent national data and perform a cost analysis comparing the 2 fertilization methods.We hypothesized that there is no improvement in CLBR when ICSI vs. cIVF is used in couples with non-male factor infertility.
+- **DOI**: 10.1016/j.fertnstert.2022.06.009
+- **Sequence**: 4
+### Next Section
+- **Text**: The dataset included patients who underwent their first IVF autologous retrieval cycle between January 2014 and December 2015.We linked subsequent fresh and frozen embryo transfers occurring through December 2016 that used only embryos from the initial retrieval cycle to determine the CLBR.Cycles that included embryos from multiple retrieval cycles were excluded.Patients who used ''some ICSI,'' with missing ICSI data, who underwent single-gene analysis or genetic testing other than preimplantation genetic testing for aneuploidy (PGT-A), who were reported to have undergone PGT-A and a cleavage-stage embryo transfer or had missing data on genetic testing were excluded (Fig. 1 ).Patients with a diagnosis of male factor infertility, those who used donor sperm, and those who used frozen oocytes from the index cycle in a subsequent transfer cycle were also excluded.Although SART considers unknown outcomes as negative outcomes, this study excluded all cycles with unknown outcomes.Separate analyses of cycles that used ICSI vs. cIVF with no genetic testing or with PGT-A were performed.
+- **DOI**: 10.1016/j.fertnstert.2022.06.009
+- **Sequence**: 6
+### Entities in Section
+- **Entity Name**: Compliance
+  - **CUI**: C0009563
+  - **Semantic Type**: Quantitative Concept
+  - **Definitions**:
+    - Distensibility measure of a chamber such as the lungs (LUNG COMPLIANCE) or bladder. Compliance is expressed as a change in volume per unit change in pressure.
+
+
+--- Similar Node 2 ---
+### Section Details
+- **Title**: A higher number of oocytes retrieved is associated with an increase in fertilized oocytes, blastocysts, and cumulative live birth rates
+- **Text**: The data in the SART CORS are validated annually with 7%-10% of clinics receiving on-site visits for chart review on the basis of an algorithm for clinic selection.During each visit, data reported by the clinic were compared with information recorded in patients' charts.In 2019, records for 2,014 cycles at 34 clinics were randomly selected for full validation, along with 213 fertility preservation cycles selected for partial validation.The full validation included review of 1,300 cycles for which a pregnancy was reported.Nine of 11 data fields selected for validation were found to have discrepancy rates of %5% (15) .The exceptions were the diagnosis field, which, depending on the diagnosis, had a discrepancy rate between 2.5% and 17.8%, and the start date, which had a discrepancy rate of 8.4%.Obstetric outcomes from Massachusetts assisted reproductive technology records during 2004-2008 have been validated to have >95% agreement with vital records (16) .
+- **DOI**: 10.1016/j.fertnstert.2023.01.001
+- **Sequence**: 8
+- **Cluster Summary**: ### 1. Introduction & Theme Context
+- The studies in this cluster primarily focus on assisted reproductive technologies (ART) and their implications on fertility and reproductive health. Key areas include the efficacy and outcomes of ART interventions like IVF and ICSI, the psychosocial and medical impacts of gestational surrogacy, and the long-term health implications for offspring conceived through ART.
+- The clinical significance lies in addressing infertility, a condition affecting 15% of reproductive-aged couples globally, and improving ART success rates, which historically have been low but are improving due to technological advancements.
+
+### 2. Treatment Types & Interventions
+- **Gestational Surrogacy**: Increasingly used in the U.S., with support from state laws, and offered by 90% of CDC-reporting IVF centers.
+- **In Vitro Fertilization (IVF) and Intracytoplasmic Sperm Injection (ICSI)**: Common ART methods involving in vitro handling of gametes. Success rates have improved due to advances in ovarian stimulation and embryo transfer techniques.
+- **Intrauterine Insemination (IUI)**: Recommended for unexplained and moderate male factor subfertility, though its efficacy is debated.
+- **Fertility Preservation in Cancer Patients**: Techniques include ovarian stimulation and non-hormonal methods, with no significant difference in cancer recurrence rates between methods.
+
+### 3. Population & Methodology
+- **Study Populations**: Diverse, including women with subfertility, cancer patients undergoing fertility preservation, and ethnic groups undergoing ART.
+- **Sample Sizes**: Vary widely, with some studies involving thousands of participants (e.g., 31,629 women and 17,630 men in a cardiovascular study).
+- **Study Designs**: Include systematic reviews, meta-analyses, cohort studies, and randomized controlled trials. Methodologies often involve linking large health datasets to assess long-term outcomes.
+
+### 4. Key Outcomes & Findings
+- **Success Rates**: ART success rates have improved, with pregnancy rates doubling from 1994 to 2003. However, live birth rates remain below 30% per cycle.
+- **Health Outcomes**: Women with subfertility have increased risks of cardiovascular diseases (e.g., stroke RR 1.18, coronary heart disease RR 1.16).
+- **Ethnic Disparities**: Black and Asian women have lower ART success rates compared to white women, with black women facing higher risks of treatment failure at various stages (e.g., cycle cancellation RR 2.15).
+- **Economic Barriers**: ART costs are prohibitively high in LMICs, often exceeding GDP per capita, limiting access to wealthier individuals.
+
+### 5. Research Gaps & Limitations
+- **Data on Poor Prognosis Groups**: Limited studies on women with few embryos or advanced reproductive age.
+- **Long-term Offspring Health**: Uncertainty remains about the long-term impact of ART on offspring health.
+- **Ethnic and Socioeconomic Factors**: Need for more research on how these factors influence ART outcomes and access.
+- **ART Costs in LMICs**: Sparse data on ART affordability and financing in low-income settings.
+
+### 6. Implications & Recommendations
+- **Clinical Practice**: Improved ART techniques and personalized treatment plans could enhance success rates. Addressing ethnic disparities and economic barriers is crucial for equitable access.
+- **Policy**: Governments, especially in LMICs, should consider integrating infertility treatments into national health policies to improve access and affordability.
+- **Future Research**: Large, well-designed trials focusing on live birth outcomes and the impact of ART on long-term health are needed. Studies should also explore the role of socioeconomic and ethnic factors in ART success.
+### Previous Section
+- **Text**: This was a retrospective study using autologous IVF retrieval cycles (IVF, oocyte banking, and embryo banking cycles) and linked FETs from IVF clinics in the United States between 2014 and 2019.The data used for this study were obtained from the SART CORS.Data were collected through voluntary submission, verified by the SART, and reported to the Centers for Disease Control and Prevention (CDC) in compliance with the Fertility Clinic Success Rate and Certification Act of 1992 (Public Law 102-493).The SART maintains Health Insurance Portability and Accountability Act-compliant business associate agreements with reporting clinics.In 2004, after a contract change with the CDC, the SART gained access to the SART CORS data system for the purposes of conducting research.In 2017, 82% of all assisted reproductive technology clinics in the United States were SART members (15) .
+- **DOI**: 10.1016/j.fertnstert.2023.01.001
+- **Sequence**: 7
+### Next Section
+- **Text**: A total of 1,283,131 retrieval cycles and FETs were retrieved from the SART CORS database.Retrieval cycles were excluded from analysis if they were missing baseline anti-m€ ullerian hormone (AMH) or body mass index (BMI).Cancelled cycles where egg retrieval was not attempted were also excluded.Furthermore, cycles where the number of 2PNs exceeded the number of oocytes retrieved were excluded.In total, 402,411 retrieval cycles were included in the study, from 296,409 patients.For retrieval cycles with blastocyst-stage embryo transfers (n ¼ 173,066), the number of total blastocysts was calculated as the sum of the number of transferred and frozen embryos.
+- **DOI**: 10.1016/j.fertnstert.2023.01.001
+- **Sequence**: 9
+### Entities in Section
+- **Entity Name**: Algorithm
+  - **CUI**: C0002045
+  - **Semantic Type**: Intellectual Product
+  - **Definitions**:
+    - A procedure consisting of a sequence of algebraic formulas and/or logical steps to calculate or determine a given task.
+- **Entity Name**: Records as Topics
+  - **CUI**: C0034869
+  - **Semantic Type**: Intellectual Product
+  - **Definitions**:
+    - Works on authentic evidence, of something having legal importance. The concept includes certificates of birth, death, etc., as well as hospital, medical, and other institutional records.
+- **Entity Name**: Fertility
+  - **CUI**: C0015895
+  - **Semantic Type**: Organism Function
+  - **Definitions**:
+    - capacity to conceive or to induce conception; may refer to either male or female.
+    - The quality or state of being capable of breeding or reproducing. Used for human and animal populations.
+    - The ability of an individual to produce offspring.
+    - The capacity to conceive or to induce conception. It may refer to either the male or female.
+- **Entity Name**: Fertility Rate
+  - **CUI**: C0015912
+  - **Semantic Type**: Quantitative Concept
+  - **Definitions**:
+    - Births in 1 year x 1,000/number of women aged 15-44 at midyear.
+- **Entity Name**: Review
+  - **CUI**: C0282443
+  - **Semantic Type**: Intellectual Product
+  - **Definitions**:
+    - An article or book published after examination of published material on a subject. It may be comprehensive to various degrees and the time range of material scrutinized may be broad or narrow, but the reviews most often desired are reviews of the current literature. The textual material examined may be equally broad and can encompass, in medicine specifically, clinical material as well as experimental research or case reports. State-of-the-art reviews tend to address more current matters. A review of the literature must be differentiated from HISTORICAL ARTICLE on the same subject, but a review of historical literature is also within the scope of this publication type.
+- **Entity Name**: Pregnancy
+  - **CUI**: C0032961
+  - **Semantic Type**: Organism Function
+  - **Definitions**:
+    - <p>You're going to have a baby! It's an exciting time, but it can also feel a bit overwhelming. You may have a lot of questions, including what you can do to give your baby a healthy start. To keep you and your baby healthy during pregnancy, it is important to:</p><ul> <li><strong>Have regular visits with your health care provider.</strong> These <a href="https://medlineplus.gov/prenatalcare.html">prenatal care</a> visits help make sure that you and your baby are healthy. And if there are any health problems, your provider can find them early. Getting treatment right away can cure many problems and prevent others.</li> <li><strong>Eat healthy and drink plenty of water.</strong> Good <a href="https://medlineplus.gov/pregnancyandnutrition.html">nutrition during pregnancy</a> includes eating a variety of</li> <ul> <li>Fruits</li> <li>Vegetables</li> <li>Whole grains</li> <li>Lean meats or other protein sources</li> <li>Low-fat dairy products</li> </ul> <li><strong>Take prenatal vitamins.</strong> Pregnant women need higher amounts of certain vitamins and minerals, such as <a href="https://medlineplus.gov/folicacid.html">folic acid</a> and <a href="https://medlineplus.gov/iron.html">iron</a>.</li> <li><strong>Be careful with medicines.</strong> Always check with your health care provider before you start or stop any <a href="https://medlineplus.gov/pregnancyandmedicines.html">medicine</a>. This includes over-the-counter medicines and dietary or herbal supplements.</li> <li><strong>Stay active.</strong> Physical activity can help you stay strong, feel and sleep better, and prepare your body for birth. Check with your provider about which types of activities are right for you.</li> <li><strong>Avoid substances that could hurt your baby,</strong> such as <a href="https://medlineplus.gov/pregnancyanddruguse.html">alcohol, drugs, and tobacco</a>.</li> </ul> <p>Your body will keep changing as your <a href="https://medlineplus.gov/fetalhealthanddevelopment.html">baby grows</a>. It can be hard to know whether a new symptom is normal or could be a sign of a <a href="https://medlineplus.gov/healthproblemsinpregnancy.html">problem</a>. Check with your health care provider if something is bothering or worrying you.</p>
+    - condition of having a developing embryo or fetus in the body.
+    - The state or condition of having a developing embryo or fetus in the body (uterus), after union of an ovum and spermatozoon, during the period from conception to birth.
+    - The status during which female mammals carry their developing young (EMBRYOS or FETUSES) in utero before birth, beginning from FERTILIZATION to BIRTH.
+    - Period from conception to childbirth.
+    - The set of physiological processes that allow an embryo or foetus to develop within the body of a female animal. It covers the time from fertilization of a female ovum by a male spermatozoon until birth. [ISBN:0192800825]
+- **Entity Name**: Pregnancy Rate
+  - **CUI**: C0032975
+  - **Semantic Type**: Quantitative Concept
+  - **Definitions**:
+    - The ratio of the number of conceptions (CONCEPTION) including LIVE BIRTH; STILLBIRTH; and fetal losses, to the mean number of females of reproductive age in a population during a set time period.
+- **Entity Name**: Diagnosis
+  - **CUI**: C0011900
+  - **Semantic Type**: Diagnostic Procedure
+  - **Definitions**:
+    - general term for detecting and classifying diseases.
+    - The determination of the nature of a disease or condition, or the distinguishing of one disease or condition from another. Assessment may be made through physical examination, laboratory tests, or the likes. Computerized programs may be used to enhance the decision-making process.
+    - <b>Description:</b>The source act is intended to help establish the presence of a (an adverse) situation described by the target act. This is not limited to diseases but can apply to any adverse situation or condition of medical or technical nature.
+    - The investigation, analysis and recognition of the presence and nature of disease, condition, or injury from expressed signs and symptoms; also, the scientific determination of any kind; the concise results of such an investigation.
+- **Entity Name**: diagnosis
+  - **CUI**: C1704338
+  - **Semantic Type**: Functional Concept
+  - **Definitions**:
+    - Used with diseases for all aspects of diagnosis, including examination, differential diagnosis and prognosis. Excludes diagnosis using imaging techniques (e.g. radiography, scintigraphy, and ultrasonography) for which "diagnostic imaging" is used.
+
+
+--- Similar Node 3 ---
+### Section Details
+- **Title**: A higher number of oocytes retrieved is associated with an increase in fertilized oocytes, blastocysts, and cumulative live birth rates
+- **Text**: This was a retrospective study using autologous IVF retrieval cycles (IVF, oocyte banking, and embryo banking cycles) and linked FETs from IVF clinics in the United States between 2014 and 2019.The data used for this study were obtained from the SART CORS.Data were collected through voluntary submission, verified by the SART, and reported to the Centers for Disease Control and Prevention (CDC) in compliance with the Fertility Clinic Success Rate and Certification Act of 1992 (Public Law 102-493).The SART maintains Health Insurance Portability and Accountability Act-compliant business associate agreements with reporting clinics.In 2004, after a contract change with the CDC, the SART gained access to the SART CORS data system for the purposes of conducting research.In 2017, 82% of all assisted reproductive technology clinics in the United States were SART members (15) .
+- **DOI**: 10.1016/j.fertnstert.2023.01.001
+- **Sequence**: 7
+- **Cluster Summary**: ### 1. Introduction & Theme Context
+- The studies in this cluster primarily focus on assisted reproductive technologies (ART) and their implications on fertility and reproductive health. Key areas include the efficacy and outcomes of ART interventions like IVF and ICSI, the psychosocial and medical impacts of gestational surrogacy, and the long-term health implications for offspring conceived through ART.
+- The clinical significance lies in addressing infertility, a condition affecting 15% of reproductive-aged couples globally, and improving ART success rates, which historically have been low but are improving due to technological advancements.
+
+### 2. Treatment Types & Interventions
+- **Gestational Surrogacy**: Increasingly used in the U.S., with support from state laws, and offered by 90% of CDC-reporting IVF centers.
+- **In Vitro Fertilization (IVF) and Intracytoplasmic Sperm Injection (ICSI)**: Common ART methods involving in vitro handling of gametes. Success rates have improved due to advances in ovarian stimulation and embryo transfer techniques.
+- **Intrauterine Insemination (IUI)**: Recommended for unexplained and moderate male factor subfertility, though its efficacy is debated.
+- **Fertility Preservation in Cancer Patients**: Techniques include ovarian stimulation and non-hormonal methods, with no significant difference in cancer recurrence rates between methods.
+
+### 3. Population & Methodology
+- **Study Populations**: Diverse, including women with subfertility, cancer patients undergoing fertility preservation, and ethnic groups undergoing ART.
+- **Sample Sizes**: Vary widely, with some studies involving thousands of participants (e.g., 31,629 women and 17,630 men in a cardiovascular study).
+- **Study Designs**: Include systematic reviews, meta-analyses, cohort studies, and randomized controlled trials. Methodologies often involve linking large health datasets to assess long-term outcomes.
+
+### 4. Key Outcomes & Findings
+- **Success Rates**: ART success rates have improved, with pregnancy rates doubling from 1994 to 2003. However, live birth rates remain below 30% per cycle.
+- **Health Outcomes**: Women with subfertility have increased risks of cardiovascular diseases (e.g., stroke RR 1.18, coronary heart disease RR 1.16).
+- **Ethnic Disparities**: Black and Asian women have lower ART success rates compared to white women, with black women facing higher risks of treatment failure at various stages (e.g., cycle cancellation RR 2.15).
+- **Economic Barriers**: ART costs are prohibitively high in LMICs, often exceeding GDP per capita, limiting access to wealthier individuals.
+
+### 5. Research Gaps & Limitations
+- **Data on Poor Prognosis Groups**: Limited studies on women with few embryos or advanced reproductive age.
+- **Long-term Offspring Health**: Uncertainty remains about the long-term impact of ART on offspring health.
+- **Ethnic and Socioeconomic Factors**: Need for more research on how these factors influence ART outcomes and access.
+- **ART Costs in LMICs**: Sparse data on ART affordability and financing in low-income settings.
+
+### 6. Implications & Recommendations
+- **Clinical Practice**: Improved ART techniques and personalized treatment plans could enhance success rates. Addressing ethnic disparities and economic barriers is crucial for equitable access.
+- **Policy**: Governments, especially in LMICs, should consider integrating infertility treatments into national health policies to improve access and affordability.
+- **Future Research**: Large, well-designed trials focusing on live birth outcomes and the impact of ART on long-term health are needed. Studies should also explore the role of socioeconomic and ethnic factors in ART success.
+### Previous Section
+- **Text**: This study was conducted after the research protocol approved by WCG IRB (study no.1308073) and the SART Research Committee.
+- **DOI**: 10.1016/j.fertnstert.2023.01.001
+- **Sequence**: 6
+### Next Section
+- **Text**: The data in the SART CORS are validated annually with 7%-10% of clinics receiving on-site visits for chart review on the basis of an algorithm for clinic selection.During each visit, data reported by the clinic were compared with information recorded in patients' charts.In 2019, records for 2,014 cycles at 34 clinics were randomly selected for full validation, along with 213 fertility preservation cycles selected for partial validation.The full validation included review of 1,300 cycles for which a pregnancy was reported.Nine of 11 data fields selected for validation were found to have discrepancy rates of %5% (15) .The exceptions were the diagnosis field, which, depending on the diagnosis, had a discrepancy rate between 2.5% and 17.8%, and the start date, which had a discrepancy rate of 8.4%.Obstetric outcomes from Massachusetts assisted reproductive technology records during 2004-2008 have been validated to have >95% agreement with vital records (16) .
+- **DOI**: 10.1016/j.fertnstert.2023.01.001
+- **Sequence**: 8
+### Entities in Section
+- **Entity Name**: research
+  - **CUI**: C0035168
+  - **Semantic Type**: Research Activity
+  - **Definitions**:
+    - Critical and exhaustive investigation or experimentation, having for its aim the discovery of new facts and their correct interpretation, the revision of accepted conclusions, theories, or laws in the light of newly discovered facts, or the practical application of such new or revised conclusions, theories, or laws. (Webster, 3d ed)
+    - http://www.nlm.nih.gov/mesh/MBrowser.html
+- **Entity Name**: Contract
+  - **CUI**: C0332522
+  - **Semantic Type**: Intellectual Product
+  - **Definitions**:
+    - Agreements between two or more parties, especially those that are written and enforceable by law (American Heritage Dictionary of the English Language, 4th ed). It is sometimes used to characterize the nature of the professional-patient relationship.
+- **Entity Name**: Accountability
+  - **CUI**: C0078889
+  - **Semantic Type**: Idea or Concept
+  - **Definitions**:
+    - Responsibility for explaining or justifying one's conduct to the public or to one's superiors. (Bioethics Thesaurus)
+- **Entity Name**: Insurance, Health
+  - **CUI**: C0021682
+  - **Semantic Type**: Health Care Activity
+  - **Definitions**:
+    - Insurance providing coverage of medical, surgical, or hospital care in general or for which there is no specific heading.
+- **Entity Name**: Compliance
+  - **CUI**: C0009563
+  - **Semantic Type**: Quantitative Concept
+  - **Definitions**:
+    - Distensibility measure of a chamber such as the lungs (LUNG COMPLIANCE) or bladder. Compliance is expressed as a change in volume per unit change in pressure.
+- **Entity Name**: Center for Disease Control and Prevention
+  - **CUI**: C0007670
+  - **Semantic Type**: Health Care Related Organization
+  - **Definitions**:
+    - An agency of the UNITED STATES PUBLIC HEALTH SERVICE that conducts and supports programs for the prevention and control of disease and provides consultation and assistance to health departments and other countries.
+- **Entity Name**: United States
+  - **CUI**: C0041703
+  - **Semantic Type**: Geographic Area
+  - **Definitions**:
+    - A country in North America, between Canada and Mexico, bordering both the North Atlantic Ocean and the North Pacific Ocean.
+    - A country in NORTH AMERICA between CANADA and MEXICO.
+- **Entity Name**: 11-(2-fluoroethyl)estradiol
+  - **CUI**: C0643582
+  - **Semantic Type**: Organic Chemical
+- **Entity Name**: Prospective Studies
+  - **CUI**: C0033522
+  - **Semantic Type**: Research Activity
+  - **Definitions**:
+    - Used in records discussing issues involved in the process of conducting studies of observations of the same individual or group over an extended period of time, usually to generate prognostic data or incidence rates related to a particular disorder, event, or behavior.
+    - A type of study in which participants are enrolled into the study before they develop the disease or outcome in question.
+    - Observation of a population for a sufficient number of persons over a sufficient number of years to generate incidence or mortality rates subsequent to the selection of the study group.
+- **Entity Name**: Retrospective Studies
+  - **CUI**: C0035363
+  - **Semantic Type**: Research Activity
+  - **Definitions**:
+    - Used in records discussing issues involved in the process of conducting studies which utilize data about experiences or events that occurred in the past, usually to study etiologic hypotheses or causative factors related to a disorder, behavior, or phenomenon.
+    - A study in which participants with known outcomes are assessed based on data collected before the study.
+    - Studies used to test etiologic hypotheses in which inferences about an exposure to putative causal factors are derived from data relating to characteristics of persons under study or to events or experiences in their past. The essential feature is that some of the persons under study have the disease or outcome of interest and their characteristics are compared with those of unaffected persons.

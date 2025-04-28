@@ -1,0 +1,16 @@
+{"time":"2025-04-21T13:45:06.629617127Z","level":"INFO","msg":"stream: starting","core version":"0.19.8","symlink path":"/home/kais/pdf_parsing/tanit_whatsapp/Chat/wandb/run-20250421_134506-ji9m0emi/logs/debug-core.log"}
+{"time":"2025-04-21T13:45:06.73297195Z","level":"INFO","msg":"created new stream","id":"ji9m0emi"}
+{"time":"2025-04-21T13:45:06.733016251Z","level":"INFO","msg":"stream: started","id":"ji9m0emi"}
+{"time":"2025-04-21T13:45:06.733044252Z","level":"INFO","msg":"writer: Do: started","stream_id":"ji9m0emi"}
+{"time":"2025-04-21T13:45:06.733058053Z","level":"INFO","msg":"sender: started","stream_id":"ji9m0emi"}
+{"time":"2025-04-21T13:45:06.733083154Z","level":"INFO","msg":"handler: started","stream_id":"ji9m0emi"}
+{"time":"2025-04-21T13:45:06.919981423Z","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-04-21T13:45:15.427138591Z","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-04-21T13:45:15.427796913Z","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-04-21T13:45:16.169493696Z","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-04-21T13:45:16.429152147Z","level":"INFO","msg":"handler: operation stats","stats":{"operations":[{"desc":"uploading history steps 0-0, summary, console lines 0-70","runtime_seconds":0.259388542}],"total_operations":1}}
+{"time":"2025-04-21T13:45:16.591296474Z","level":"INFO","msg":"stream: closing","id":"ji9m0emi"}
+{"time":"2025-04-21T13:45:16.591313875Z","level":"INFO","msg":"handler: closed","stream_id":"ji9m0emi"}
+{"time":"2025-04-21T13:45:16.591321475Z","level":"INFO","msg":"writer: Close: closed","stream_id":"ji9m0emi"}
+{"time":"2025-04-21T13:45:16.591329675Z","level":"INFO","msg":"sender: closed","stream_id":"ji9m0emi"}
+{"time":"2025-04-21T13:45:16.591394077Z","level":"INFO","msg":"stream: closed","id":"ji9m0emi"}

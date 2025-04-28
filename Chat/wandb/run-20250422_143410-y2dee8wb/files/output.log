@@ -1,0 +1,407 @@
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: summary)} {position: line: 95, column: 24, offset: 3163} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownRelationshipTypeWarning} {category: UNRECOGNIZED} {title: The provided relationship type is not in the database.} {description: One of the relationship types in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing relationship type is: PART_OF_CLUSTER)} {position: line: 5, column: 33, offset: 305} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownLabelWarning} {category: UNRECOGNIZED} {title: The provided label is not in the database.} {description: One of the labels in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing label name is: Cluster)} {position: line: 18, column: 50, offset: 925} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownLabelWarning} {category: UNRECOGNIZED} {title: The provided label is not in the database.} {description: One of the labels in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing label name is: Cluster)} {position: line: 5, column: 68, offset: 340} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated function: `id`.} {position: line: 93, column: 21, offset: 3105} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: summary)} {position: line: 54, column: 32, offset: 2089} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated function: `id`.} {position: line: 79, column: 21, offset: 2684} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated function: `id`.} {position: line: 48, column: 21, offset: 1832} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+--- Similar Node 1 ---
+### Entity Details
+- **Name**: Ethics Committees, Research
+- **CUI**: C0086911
+- **Semantic Type**: Professional or Occupational Group; Human
+- **Definitions**:
+  - A specially constituted independent review body comprised of medical, scientific and non-scientific members established and designated by an entity to ensure the protection of the rights, safety and well-being of human subjects recruited to participate in biomedical or behavioral research according to the requirements outlined in Title 38, part 16 (same as Title 45, part 46 and Title 21, part 56) of the U.S. Code of Federal Regulations. IRB responsibility include but not limited to the reviewing, approving, and providing continuing review of trial protocol and amendments and of the methods and material(s) to be used in obtaining and documenting informed consent of the trial. Other equivalent committees with the same or similar functions are also considered to be IRBs.
+  - Hospital or other institutional committees established to protect the welfare of research subjects. Federal regulations (the "Common Rule" (45 CFR 46)) mandate the use of these committees to monitor federally-funded biomedical and behavioral research involving human subjects.
+- **Related Entities**:
+  - **Name**: RAB3D gene
+    - **CUI**: C1419208
+    - **Relationship**: LOCATION_OF
+  - **Name**: RAB3D gene
+    - **CUI**: C1419208
+    - **Relationship**: LOCATION_OF
+
+
+--- Similar Node 2 ---
+No results found.
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: summary)} {position: line: 95, column: 24, offset: 3163} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownRelationshipTypeWarning} {category: UNRECOGNIZED} {title: The provided relationship type is not in the database.} {description: One of the relationship types in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing relationship type is: PART_OF_CLUSTER)} {position: line: 5, column: 33, offset: 305} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownLabelWarning} {category: UNRECOGNIZED} {title: The provided label is not in the database.} {description: One of the labels in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing label name is: Cluster)} {position: line: 18, column: 50, offset: 925} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownLabelWarning} {category: UNRECOGNIZED} {title: The provided label is not in the database.} {description: One of the labels in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing label name is: Cluster)} {position: line: 5, column: 68, offset: 340} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated function: `id`.} {position: line: 93, column: 21, offset: 3105} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: summary)} {position: line: 54, column: 32, offset: 2089} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated function: `id`.} {position: line: 79, column: 21, offset: 2684} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated function: `id`.} {position: line: 48, column: 21, offset: 1832} for query: 'CALL db.index.vector.queryNodes($vector_index_name, $top_k, $query_vector) YIELD node, score \n// Case 1: Embedding linked to SectionPart\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)\nOPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)\nOPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)\n\n// Previous and next SectionParts based on sequence\nOPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})\n  WHERE prev_section_part.sequence = section_part.sequence - 1\nOPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})\n  WHERE next_section_part.sequence = section_part.sequence + 1\n\n// Case 2: Embedding linked to Entity\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)\nOPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)\n\n// Case 3: Embedding linked to Cluster\nOPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)\n\n// Aggregate entities and relationships\nWITH \n  section_part,\n  prev_section_part,\n  next_section_part,\n  entity,\n  related_cluster,\n  cluster,\n  collect({\n    name: section_entity.name,\n    cui: section_entity.cui,\n    semantic_type: section_entity.semantic_type,\n    definitions: [key IN keys(section_entity) WHERE key STARTS WITH "definition_" AND section_entity[key] IS NOT NULL | section_entity[key]],\n    relationship: "HAS_ENTITY"\n  }) AS section_entities,\n  collect({\n    name: related_entity.name,\n    cui: related_entity.cui,\n    semantic_type: related_entity.semantic_type,\n    definitions: [key IN keys(related_entity) WHERE key STARTS WITH "definition_" AND related_entity[key] IS NOT NULL | related_entity[key]],\n    relationship: type(rel)\n  }) AS related_entities\n\n// Return clean results\nRETURN\nCASE \n  WHEN section_part IS NOT NULL THEN {\n    section_part: {\n      starting_id : ID(section_part),\n      text: section_part.text,\n      title: section_part.title,\n      doi: section_part.doi,\n      sequence: section_part.sequence,\n      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],\n      summary: related_cluster.summary\n    },\n    previous_section_part: CASE \n      WHEN prev_section_part IS NOT NULL THEN {\n        text: prev_section_part.text,\n        doi: prev_section_part.doi,\n        sequence: prev_section_part.sequence\n      }\n      ELSE NULL\n    END,\n    next_section_part: CASE \n      WHEN next_section_part IS NOT NULL THEN {\n        text: next_section_part.text,\n        doi: next_section_part.doi,\n        sequence: next_section_part.sequence\n      }\n      ELSE NULL\n    END\n  }\n  ELSE NULL\nEND AS section_part_details,\n\nCASE \n  WHEN entity IS NOT NULL THEN {\n    entity: {\n      starting_id : ID(entity),\n      name: entity.name,\n      cui: entity.cui,\n      semantic_type: entity.semantic_type,\n      definitions: [key IN keys(entity) WHERE key STARTS WITH "definition_" AND entity[key] IS NOT NULL | entity[key]],\n      related_entities: [rel IN related_entities WHERE rel.name IS NOT NULL]\n    }\n  }\n  ELSE NULL\nEND AS entity_details,\n\nCASE \n  WHEN cluster IS NOT NULL THEN {\n    cluster: {\n      starting_id : ID(cluster),\n      id: cluster.id,\n      summary: cluster.summary\n    }\n  }\n  ELSE NULL\nEND AS cluster_details\n'
+
+
+--- Similar Node 1 ---
+### Section Details
+- **Title**: Intracytoplasmic sperm injection vs. conventional in vitro fertilization in patients with non-male factor infertility
+- **Text**: This retrospective analysis was performed using primary IVF clinic data collected by the Society for Assisted Reproductive Technology (SART).All data were collected by SART, validated and audited annually, and reported to the Centers for Disease Control and Prevention in compliance with the Fertility Clinic Success Rate and Certification Act of 1992 (Public Law 102-493).
+- **DOI**: 10.1016/j.fertnstert.2022.06.009
+- **Sequence**: 5
+- **Cluster Summary**: None
+### Previous Section
+- **Text**: Although many studies have shown that ICSI is not beneficial in cases of non-male factor infertility, it has continued to be used at high rates, and its effect on cumulative live birth rates (CLBRs) has not been studied in a large US population.It is possible that while using ICSI, CLBR might be impaired because only fully mature oocytes are inseminated, thus decreasing the pool of oocytes with potential for embryo development, whereas with standard insemination techniques, oocytes at various stages of maturation are inseminated (5) .There has also been a lack of cost analyses assessing the financial implications of this additional procedure.The purpose of our study was to assess CLBR while using ICSI vs. cIVF based on recent national data and perform a cost analysis comparing the 2 fertilization methods.We hypothesized that there is no improvement in CLBR when ICSI vs. cIVF is used in couples with non-male factor infertility.
+- **DOI**: 10.1016/j.fertnstert.2022.06.009
+- **Sequence**: 4
+### Next Section
+- **Text**: The dataset included patients who underwent their first IVF autologous retrieval cycle between January 2014 and December 2015.We linked subsequent fresh and frozen embryo transfers occurring through December 2016 that used only embryos from the initial retrieval cycle to determine the CLBR.Cycles that included embryos from multiple retrieval cycles were excluded.Patients who used ''some ICSI,'' with missing ICSI data, who underwent single-gene analysis or genetic testing other than preimplantation genetic testing for aneuploidy (PGT-A), who were reported to have undergone PGT-A and a cleavage-stage embryo transfer or had missing data on genetic testing were excluded (Fig. 1 ).Patients with a diagnosis of male factor infertility, those who used donor sperm, and those who used frozen oocytes from the index cycle in a subsequent transfer cycle were also excluded.Although SART considers unknown outcomes as negative outcomes, this study excluded all cycles with unknown outcomes.Separate analyses of cycles that used ICSI vs. cIVF with no genetic testing or with PGT-A were performed.
+- **DOI**: 10.1016/j.fertnstert.2022.06.009
+- **Sequence**: 6
+
+
+--- Similar Node 2 ---
+### Entity Details
+- **Name**: Assisted Reproductive Technologies
+- **CUI**: C0872104
+- **Semantic Type**: Therapeutic or Preventive Procedure
+- **Definitions**:
+  - <p>Assisted reproductive technology (ART) is used to treat <a href="https://medlineplus.gov/infertility.html">infertility</a>. It includes fertility treatments that handle both eggs and sperm. It works by removing eggs from the ovaries. The eggs are then mixed with sperm to make embryos. The embryos are then put back in the parent's body. In vitro fertilization (IVF) is the most common and effective type of ART.</p> <p>ART procedures sometimes use donor eggs, donor sperm, or previously frozen embryos. It may also involve a surrogate or gestational carrier. A surrogate is a person who becomes pregnant with sperm from one partner of the couple. A gestational carrier becomes pregnant with an egg from one partner and sperm from the other partner.</p> <p>The most common complication of ART is a <a href="https://medlineplus.gov/twinstripletsmultiplebirths.html">multiple pregnancy</a>. It can be prevented or minimized by limiting the number of embryos that are put into the parent's body. </p>
+  - Fertility treatments in which eggs and embryos are handled.
+- **Related Entities**:
+  - **Name**: Obesity
+    - **CUI**: C0028754
+    - **Relationship**: TREATS
+  - **Name**: Elderly (population group)
+    - **CUI**: C0001792
+    - **Relationship**: TREATS
+  - **Name**: Infant
+    - **CUI**: C0021270
+    - **Relationship**: TREATS
+  - **Name**: Unexplained infertility
+    - **CUI**: C0404585
+    - **Relationship**: TREATS
+  - **Name**: Hyperostosis, Diffuse Idiopathic Skeletal
+    - **CUI**: C0020498
+    - **Relationship**: TREATS
+  - **Name**: Placenta Previa
+    - **CUI**: C0032046
+    - **Relationship**: TREATS
+  - **Name**: Cystic Fibrosis
+    - **CUI**: C0010674
+    - **Relationship**: TREATS
+  - **Name**: age differences
+    - **CUI**: C0699810
+    - **Relationship**: TREATS
+  - **Name**: Partner in relationship
+    - **CUI**: C0682323
+    - **Relationship**: TREATS
+  - **Name**: Present
+    - **CUI**: C0150312
+    - **Relationship**: TREATS
+  - **Name**: Personal appearance
+    - **CUI**: C0233426
+    - **Relationship**: TREATS
+  - **Name**: Female infertility
+    - **CUI**: C0021361
+    - **Relationship**: TREATS
+  - **Name**: Pre-Eclampsia
+    - **CUI**: C0032914
+    - **Relationship**: TREATS
+  - **Name**: Single Hospital
+    - **CUI**: C3846671
+    - **Relationship**: TREATS
+  - **Name**: Recurrent pregnancy loss
+    - **CUI**: C2921106
+    - **Relationship**: TREATS
+  - **Name**: Problem
+    - **CUI**: C0033213
+    - **Relationship**: TREATS
+  - **Name**: Ocular Cicatricial Pemphigoid
+    - **CUI**: C1282359
+    - **Relationship**: TREATS
+  - **Name**: Subfertility, Male
+    - **CUI**: C0848676
+    - **Relationship**: TREATS
+  - **Name**: Multiple Pregnancy
+    - **CUI**: C0032989
+    - **Relationship**: TREATS
+  - **Name**: Males
+    - **CUI**: C0086582
+    - **Relationship**: TREATS
+  - **Name**: Females
+    - **CUI**: C0086287
+    - **Relationship**: TREATS
+  - **Name**: Sibling
+    - **CUI**: C0037047
+    - **Relationship**: TREATS
+  - **Name**: Complication
+    - **CUI**: C0009566
+    - **Relationship**: TREATS
+  - **Name**: Endometriosis
+    - **CUI**: C0014175
+    - **Relationship**: TREATS
+  - **Name**: Ability
+    - **CUI**: C0085732
+    - **Relationship**: TREATS
+  - **Name**: Polycystic Ovary Syndrome
+    - **CUI**: C0032460
+    - **Relationship**: TREATS
+  - **Name**: Disease
+    - **CUI**: C0012634
+    - **Relationship**: TREATS
+  - **Name**: 5 mm
+    - **CUI**: C3840882
+    - **Relationship**: TREATS
+  - **Name**: Did not receive therapy or drug for
+    - **CUI**: C0332155
+    - **Relationship**: TREATS
+  - **Name**: Cohen syndrome
+    - **CUI**: C0265223
+    - **Relationship**: TREATS
+  - **Name**: Population Group
+    - **CUI**: C1257890
+    - **Relationship**: TREATS
+  - **Name**: Couples (persons)
+    - **CUI**: C0010222
+    - **Relationship**: TREATS
+  - **Name**: Signs and Symptoms
+    - **CUI**: C0037088
+    - **Relationship**: TREATS
+  - **Name**: Hereditary Diseases
+    - **CUI**: C0019247
+    - **Relationship**: TREATS
+  - **Name**: Male population group
+    - **CUI**: C0025266
+    - **Relationship**: TREATS
+  - **Name**: Subfertility
+    - **CUI**: C0729353
+    - **Relationship**: TREATS
+  - **Name**: Live Birth
+    - **CUI**: C0481667
+    - **Relationship**: TREATS
+  - **Name**: Control Groups
+    - **CUI**: C0009932
+    - **Relationship**: TREATS
+  - **Name**: Spontaneous abortion
+    - **CUI**: C0000786
+    - **Relationship**: TREATS
+  - **Name**: Prognosis good
+    - **CUI**: C0278250
+    - **Relationship**: TREATS
+  - **Name**: Participant
+    - **CUI**: C0679646
+    - **Relationship**: TREATS
+  - **Name**: Cohort
+    - **CUI**: C0599755
+    - **Relationship**: TREATS
+  - **Name**: Aneuploidy
+    - **CUI**: C0002938
+    - **Relationship**: TREATS
+  - **Name**: Varicocele
+    - **CUI**: C0042341
+    - **Relationship**: TREATS
+  - **Name**: Infertility
+    - **CUI**: C0021359
+    - **Relationship**: TREATS
+  - **Name**: Persons
+    - **CUI**: C0027361
+    - **Relationship**: TREATS
+  - **Name**: Malignant Neoplasms
+    - **CUI**: C0006826
+    - **Relationship**: TREATS
+  - **Name**: Weight decreased
+    - **CUI**: C1262477
+    - **Relationship**: TREATS
+  - **Name**: Overweight
+    - **CUI**: C0497406
+    - **Relationship**: TREATS
+  - **Name**: Woman
+    - **CUI**: C0043210
+    - **Relationship**: TREATS
+  - **Name**: Livebirth
+    - **CUI**: C0419373
+    - **Relationship**: TREATS
+  - **Name**: Homo sapiens
+    - **CUI**: C0086418
+    - **Relationship**: TREATS
+  - **Name**: Age
+    - **CUI**: C0001779
+    - **Relationship**: TREATS
+  - **Name**: Patients
+    - **CUI**: C0030705
+    - **Relationship**: TREATS
+  - **Name**: Interventional procedure
+    - **CUI**: C0184661
+    - **Relationship**: ISA
+  - **Name**: Therapeutic procedure
+    - **CUI**: C0087111
+    - **Relationship**: ISA
+  - **Name**: patient profile
+    - **CUI**: C0747306
+    - **Relationship**: COEXISTS_WITH
+  - **Name**: Risk Assessment
+    - **CUI**: C0086930
+    - **Relationship**: COEXISTS_WITH
+  - **Name**: Growth arrest
+    - **CUI**: C0333951
+    - **Relationship**: CAUSES
+  - **Name**: Infertility
+    - **CUI**: C0021359
+    - **Relationship**: CAUSES
+  - **Name**: Ovarian Hyperstimulation Syndrome
+    - **CUI**: C0085083
+    - **Relationship**: PREVENTS
+  - **Name**: Unexposed Population
+    - **CUI**: C2349018
+    - **Relationship**: ADMINISTERED_TO
+  - **Name**: Patients
+    - **CUI**: C0030705
+    - **Relationship**: ADMINISTERED_TO
+  - **Name**: Embryologists
+    - **CUI**: C0259859
+    - **Relationship**: ADMINISTERED_TO
+  - **Name**: Child
+    - **CUI**: C0008059
+    - **Relationship**: ADMINISTERED_TO
+  - **Name**: Partner in relationship
+    - **CUI**: C0682323
+    - **Relationship**: ADMINISTERED_TO
+  - **Name**: Woman
+    - **CUI**: C0043210
+    - **Relationship**: ADMINISTERED_TO
+  - **Name**: CD69 protein, human
+    - **CUI**: C2744535
+    - **Relationship**: USES
+  - **Name**: Gonadotropin releasing hormone antagonist
+    - **CUI**: C1268855
+    - **Relationship**: USES
+  - **Name**: Aspirin
+    - **CUI**: C0004057
+    - **Relationship**: USES
+  - **Name**: Lucrin
+    - **CUI**: C1517836
+    - **Relationship**: USES
+  - **Name**: Leuprolide Acetate
+    - **CUI**: C0700596
+    - **Relationship**: USES
+  - **Name**: Pharmaceutical Preparations
+    - **CUI**: C0013227
+    - **Relationship**: USES
+  - **Name**: Gonadotropins
+    - **CUI**: C0018061
+    - **Relationship**: USES
+  - **Name**: Infertility therapy
+    - **CUI**: C0200070
+    - **Relationship**: compared_with
+  - **Name**: Intrauterine artificial insemination
+    - **CUI**: C0546824
+    - **Relationship**: compared_with
+  - **Name**: AKR1A1 wt Allele
+    - **CUI**: C3715044
+    - **Relationship**: compared_with
+  - **Name**: Therapeutic procedure
+    - **CUI**: C0087111
+    - **Relationship**: compared_with
+  - **Name**: Growth Hormone
+    - **CUI**: C0037663
+    - **Relationship**: compared_with
+  - **Name**: Sperm Injections, Intracytoplasmic
+    - **CUI**: C0455164
+    - **Relationship**: compared_with
+  - **Name**: Embryo transfer (procedure)
+    - **CUI**: C0013938
+    - **Relationship**: compared_with
+  - **Name**: Assisted Reproductive Technologies
+    - **CUI**: C0872104
+    - **Relationship**: compared_with
+  - **Name**: Growth
+    - **CUI**: C0018270
+    - **Relationship**: STIMULATES
+  - **Name**: Irrigation
+    - **CUI**: C0022100
+    - **Relationship**: METHOD_OF
+  - **Name**: Pharmacogenetics
+    - **CUI**: C0031325
+    - **Relationship**: METHOD_OF
+  - **Name**: Interventional procedure
+    - **CUI**: C0184661
+    - **Relationship**: METHOD_OF
+  - **Name**: Hereditary Diseases
+    - **CUI**: C0019247
+    - **Relationship**: PREDISPOSES
+  - **Name**: Severe pre-eclampsia
+    - **CUI**: C0341950
+    - **Relationship**: PREDISPOSES
+  - **Name**: Ovarian Hyperstimulation Syndrome
+    - **CUI**: C0085083
+    - **Relationship**: PREDISPOSES
+  - **Name**: Spontaneous abortion
+    - **CUI**: C0000786
+    - **Relationship**: PREDISPOSES
+  - **Name**: Embryonic Development
+    - **CUI**: C0013936
+    - **Relationship**: AFFECTS
+  - **Name**: Polycystic Ovary Syndrome
+    - **CUI**: C0032460
+    - **Relationship**: AFFECTS
+  - **Name**: thyroid function
+    - **CUI**: C2242456
+    - **Relationship**: AFFECTS
+  - **Name**: Fertilization
+    - **CUI**: C0015914
+    - **Relationship**: AFFECTS
+  - **Name**: reception
+    - **CUI**: C0544683
+    - **Relationship**: AFFECTS
+  - **Name**: Reproduction
+    - **CUI**: C0035150
+    - **Relationship**: AFFECTS
+  - **Name**: Disease Progression
+    - **CUI**: C0242656
+    - **Relationship**: AFFECTS
+  - **Name**: Patients
+    - **CUI**: C0030705
+    - **Relationship**: AFFECTS
+  - **Name**: Pregnancy
+    - **CUI**: C0032961
+    - **Relationship**: AFFECTS
+  - **Name**: Biological Aging
+    - **CUI**: C0085759
+    - **Relationship**: AFFECTS
+  - **Name**: Oocyte Retrieval
+    - **CUI**: C0404268
+    - **Relationship**: PRECEDES
+  - **Name**: Multiple Fibroids
+    - **CUI**: C0237022
+    - **Relationship**: PRECEDES
+  - **Name**: Sperm Injections, Intracytoplasmic
+    - **CUI**: C0455164
+    - **Relationship**: PRECEDES
+  - **Name**: Ovarian Stimulation
+    - **CUI**: C0949385
+    - **Relationship**: PRECEDES
+  - **Name**: Radical excision
+    - **CUI**: C0184918
+    - **Relationship**: PRECEDES
+  - **Name**: Embryo transfer (procedure)
+    - **CUI**: C0013938
+    - **Relationship**: higher_than
+  - **Name**: Woman
+    - **CUI**: C0043210
+    - **Relationship**: NEG_TREATS
+  - **Name**: Patients
+    - **CUI**: C0030705
+    - **Relationship**: NEG_TREATS
+  - **Name**: Sperm Injections, Intracytoplasmic
+    - **CUI**: C0455164
+    - **Relationship**: NEG_METHOD_OF
+
+
+--- Similar Node 3 ---
+### Section Details
+- **Title**: ESHRE PGT Consortium good practice recommendations for the detection of monogenic disorders†
+- **Text**: European Society of Human Reproduction and Embryology.
+- **DOI**: 10.1093/hropen/hoaa018
+- **Sequence**: 234
+- **Cluster Summary**: None
+### Previous Section
+- **Text**: Recommendations on PGT follow-up, baseline IVF live birth rates for PGT and misdiagnosis are covered in the paper on organisation of PGT (ESHRE PGT Consortium Steering committee et al., 2020) .
+- **DOI**: 10.1093/hropen/hoaa018
+- **Sequence**: 233
+### Next Section
+- **Text**: Downloaded from https://academic.oup.com/hropen/article/2020/3/hoaa018/5848301 by guest on 08 November 2023
+- **DOI**: 10.1093/hropen/hoaa018
+- **Sequence**: 235

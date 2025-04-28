@@ -164,3 +164,114 @@ def chat_with_gpt4_no_streaming(prompt, chat_history=None):
     except Exception as e:
         print(f"An error occurred: {e}")
         return "Sorry, an error has occurred. Please try again later!"
+
+
+
+def evaluate_tanit(prompt, chat_history=None):
+    """
+    Interact with OpenAI's GPT-4O model, maintaining chat history and ensuring JSON-formatted output.
+
+    Parameters:
+    - prompt (str): The user's input prompt.
+    - phone_number (str): The user's phone number.
+    - chat_history (list): A list of dictionaries representing the chat history.
+
+    Returns:
+    - dict: The assistant's response in JSON format.
+    """
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    if chat_history is None:
+        chat_history = []
+
+    system_message = {
+    "role": "system",
+    "content": (
+        "English Version:\n"
+        "You are Tanit AI, a personal companion guiding users through parenthood on WhatsApp, specializing in creating pedagogical, engaging, empathetic, and clear answers in reproductive medicine.\n"
+        "\n"
+        "Key Instructions:\n"
+        "\n"
+        "Format Responses:\n"
+        "- Respond only with one of the options.\n"
+        "\n"
+        "Authority & Integrity:\n"
+        "- Base your answers strictly on authoritative information from the retrieve_info function. (This function must be used for every question about reproductive medicine — IMPORTANT)\n"
+        "- Take a deep breath and read all the retrieved information carefully, then use what is relevant to craft your answer.\n"
+        "- Do not alter or challenge provided information using internal knowledge.\n"
+        "\n"
+        "Suggestions & Metadata:\n"
+        "- Carefully review retrieved data before answering.\n"
+        "\n"
+        "Ensure strict adherence to this format. Do not deviate.\n"
+        "Example Response: "
+        """Input:{
+        "question": "What is the purpose of an Institutional Review Board (IRB) in research involving human subjects?",
+        "options": [
+            "To provide funding for research studies",
+            "To ensure the ethical treatment and protection of human subjects involved in research",
+            "To recruit participants for clinical trials",
+            "To publish research findings in academic journals"
+        ]
+    },"""
+    "\n"
+    "Your output: To provide funding for research studies "
+    )
+    }
+
+    functions = [
+        {
+            "name": "retrieve_info",
+            "description": "Retrieve needed information to answer questions related to reproductive medicine. (Must be used for each question)",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "question": {
+                        "type": "string",
+                        "description": "The question requiring information to answer it.",
+                    },
+                },
+                "required": ["question"],
+            },
+        }
+    ]
+
+    messages = [system_message] + chat_history
+    messages.append({"role": "user", "content": prompt})
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages,
+            functions=functions,
+            function_call="auto"
+        )
+        
+        response_message = response.choices[0].message
+        
+        if response_message.function_call and response_message.function_call.name == "retrieve_info":
+            try:
+                function_args = json.loads(response_message.function_call.arguments)
+            except json.JSONDecodeError as e:
+                print(f"Error parsing function arguments: {e}")
+                function_args = {}
+            
+            function_response = retrieve_info(question=function_args.get("question"))
+            
+            messages.append({
+                "role": "function", 
+                "name": response_message.function_call.name, 
+                "content": function_response
+            })
+            
+            second_response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=messages
+            )
+            
+            return second_response.choices[0].message.content
+        else:
+            return response_message.content
+             
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return "Sorry, an error has occurred. Please try again later!"

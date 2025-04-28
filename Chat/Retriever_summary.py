@@ -7,7 +7,7 @@ from neo4j_graphrag.types import RetrieverResultItem
 def result_formatter(record: neo4j.Record) -> RetrieverResultItem:
     section_part_details = record.get("section_part_details")
     entity_details = record.get("entity_details")
-
+    cluster_details = record.get("cluster_details")
     content = ""
     metadata = {}
 
@@ -18,6 +18,7 @@ def result_formatter(record: neo4j.Record) -> RetrieverResultItem:
         content += f"- **Text**: {section_part.get('text')}\n"
         content += f"- **DOI**: {section_part.get('doi')}\n"
         content += f"- **Sequence**: {section_part.get('sequence')}\n"
+        content += f"- **Cluster Summary**: {section_part.get('summary')}\n"
 
         prev_section_part = section_part_details.get("previous_section_part")
         if prev_section_part:
@@ -74,6 +75,16 @@ def result_formatter(record: neo4j.Record) -> RetrieverResultItem:
             "name": entity.get("name"),
             "cui": entity.get("cui"),
         })
+    if cluster_details:
+        cluster = cluster_details.get("cluster", {})
+        content += "### Cluster Details\n"
+        content += f"- **ID**: {cluster.get('id')}\n"
+        content += f"- **Summary**: {cluster.get('summary')}\n"
+
+        metadata.update({
+            "cluster_id": cluster.get("starting_id"),
+            "summary": cluster.get("summary"),
+        })
 
     if not content:
         content = "No results found."
@@ -89,6 +100,7 @@ def hybridCypherRetriever(query_text):
 // Case 1: Embedding linked to SectionPart
 OPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(section_part:SectionPart)
 OPTIONAL MATCH (section_part)-[:HAS_ENTITY]->(section_entity:Entity)
+OPTIONAL MATCH (section_part)-[:PART_OF_CLUSTER]->(related_cluster:Cluster)
 
 // Previous and next SectionParts based on sequence
 OPTIONAL MATCH (prev_section_part:SectionPart {authors: section_part.authors})
@@ -100,12 +112,17 @@ OPTIONAL MATCH (next_section_part:SectionPart {authors: section_part.authors})
 OPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(entity:Entity)
 OPTIONAL MATCH (entity)-[rel]->(related_entity:Entity)
 
+// Case 3: Embedding linked to Cluster
+OPTIONAL MATCH (node)<-[:HAS_EMBEDDING]-(cluster:Cluster)
+
 // Aggregate entities and relationships
 WITH 
   section_part,
   prev_section_part,
   next_section_part,
   entity,
+  related_cluster,
+  cluster,
   collect({
     name: section_entity.name,
     cui: section_entity.cui,
@@ -131,7 +148,8 @@ CASE
       title: section_part.title,
       doi: section_part.doi,
       sequence: section_part.sequence,
-      entities: [entity IN section_entities WHERE entity.name IS NOT NULL]
+      entities: [entity IN section_entities WHERE entity.name IS NOT NULL],
+      summary: related_cluster.summary
     },
     previous_section_part: CASE 
       WHEN prev_section_part IS NOT NULL THEN {
@@ -165,11 +183,22 @@ CASE
     }
   }
   ELSE NULL
-END AS entity_details
+END AS entity_details,
+
+CASE 
+  WHEN cluster IS NOT NULL THEN {
+    cluster: {
+      starting_id : ID(cluster),
+      id: cluster.id,
+      summary: cluster.summary
+    }
+  }
+  ELSE NULL
+END AS cluster_details
 """
 
-    URI = os.getenv("NEO4J_URL_GERMANY")
-    AUTH = (os.getenv("NEO4J_USERNAME_GERMANY"), os.getenv("NEO4J_PASSWORD_GERMANY"))
+    URI = os.getenv("NEO4J_URL_EASTUS")
+    AUTH = (os.getenv("NEO4J_USERNAME_EASTUS"), os.getenv("NEO4J_PASSWORD_EASTUS"))
     driver = neo4j.GraphDatabase.driver(URI, auth=AUTH)
     embedder = OpenAIEmbeddings(model="text-embedding-3-large")
     retriever = VectorCypherRetriever(
@@ -195,3 +224,7 @@ END AS entity_details
     except Exception as e:
         print(f"An error occurred: {e}")
     return formatted_results
+
+
+
+

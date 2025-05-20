@@ -12,3 +12,4 @@ requests
 literalai
 python-dateutil
 weave
+scikit-learn

@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS as cors
-from whatsapp_utils import  process_message_literal, find_user, find_inactive_numeric_users, notify_user
+from whatsapp_utils import  process_message_literal, find_user, find_inactive_numeric_users, notify_user, find_full_chat_history
 from whatsapp_metrics import get_global_metrics, analyze_thread
 
 app = Flask(__name__)
@@ -60,6 +60,18 @@ def thread_metrics_endpoint(phone_number):
     if not metrics:
         return jsonify({"error": f"No data found for thread_id {thread_id}"}), 404
     return jsonify(metrics)
+
+@app.route("/get_chat_by_phone", methods=["POST"])
+def get_chat_by_phone():
+    data = request.get_json()
+    if not data or 'phone_number' not in data:
+        return jsonify({"error": "Missing 'phone_number' in request"}), 400
+    phone_number= data['phone_number']
+    thread_id = f"Thread_{phone_number}"
+    chat_history = find_full_chat_history(thread_id)
+    if not chat_history:
+        return jsonify({"error": f"No chat history found for thread_id {thread_id}"}), 404
+    return jsonify(chat_history)
 
 
 if __name__ == "__main__":
